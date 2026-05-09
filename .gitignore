@@ -1,0 +1,8 @@
+# IDE
+.idea/
+
+# Sisyphus workspace
+.sisyphus/
+
+# OS
+.DS_Store
