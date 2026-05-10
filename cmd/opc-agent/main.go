@@ -72,6 +72,15 @@ func main() {
 	// 初始化 HITL
 	hitlHandler := hitl.NewHandler(os.Stdin, os.Stdout)
 
+	// 初始化模型客户端
+	modelClient := agent.NewDefaultModelClient(cfg.Model.APIBaseURL, cfg.Model.APIKey)
+	if cfg.Model.APIBaseURL == "" {
+		fmt.Println("[系统] 模型 API：未配置（开发模式，输出为模拟内容）")
+		fmt.Println("[系统] 在 config.yaml 中设置 model.api_base_url 可接入真实模型")
+	} else {
+		fmt.Printf("[系统] 模型 API：%s （模型：%s）\n", cfg.Model.APIBaseURL, cfg.Model.Name)
+	}
+
 	// 初始化 Router
 	router := agent.NewRouter(pluginLoader, cfg.Model.Name)
 
@@ -119,7 +128,7 @@ func main() {
 			continue
 		}
 
-		processTask(context.Background(), input, pluginLoader, router, reviewer, memoryStore, hitlHandler, cfg)
+		processTask(context.Background(), input, pluginLoader, router, reviewer, memoryStore, hitlHandler, modelClient, cfg)
 	}
 
 	fmt.Println("\n再见！")
@@ -127,7 +136,8 @@ func main() {
 
 func processTask(ctx context.Context, input string, loader *runtime.Loader,
 	router *agent.Router, reviewer *agent.Reviewer,
-	store memory.MemoryStore, hitlHandler *hitl.Handler, cfg *config.Config) {
+	store memory.MemoryStore, hitlHandler *hitl.Handler,
+	modelClient runtime.ModelClient, cfg *config.Config) {
 
 	startTime := time.Now()
 	fmt.Printf("\n[任务] 处理中：%s\n", input)
@@ -166,15 +176,23 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 
 	// 3. 调用插件 Execute
 	opts := map[string]interface{}{
-		"memories": memories,
+		"memories":     memories,
+		"model_client": modelClient,
 	}
 	execResult, err := routeResult.Plugin.Execute(taskCtx, taskInput, opts)
 	if err != nil {
 		fmt.Printf("[错误] Agent 执行失败：%v\n", err)
 		return
 	}
-	fmt.Printf("[执行] 完成 (token: in=%d out=%d)\n",
-		execResult.TokenUsage.InputTokens, execResult.TokenUsage.OutputTokens)
+	modelInfo := execResult.TokenUsage.ModelName
+	if modelInfo == "" {
+		modelInfo = routeResult.Info.ModelName
+		if modelInfo == "" {
+			modelInfo = cfg.Model.Name
+		}
+	}
+	fmt.Printf("[执行] 完成 (model=%s in=%d out=%d)\n",
+		modelInfo, execResult.TokenUsage.InputTokens, execResult.TokenUsage.OutputTokens)
 
 	// 4. Reviewer 审查
 	reviewResult, _ := reviewer.Review(taskCtx, execResult.Data,
@@ -224,7 +242,7 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 		fmt.Sprintf("%+v", execResult.Data),
 		keyDecisions,
 		map[string]string{
-			"model":      cfg.Model.Name,
+			"model":      modelInfo,
 			"tokens_in":  fmt.Sprintf("%d", execResult.TokenUsage.InputTokens),
 			"tokens_out": fmt.Sprintf("%d", execResult.TokenUsage.OutputTokens),
 		},

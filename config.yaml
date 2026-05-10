@@ -7,6 +7,8 @@ model:
   name: "gemini-2.0-flash"
   temperature: 0.3
   max_tokens: 4096
+  api_base_url: ""                     # OpenAI API 兼容地址，留空=开发模式
+  api_key: ""                          # API 密钥
 
 runtime:
   plugins_dir: "./build/plugins"

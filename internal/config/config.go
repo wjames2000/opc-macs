@@ -17,6 +17,8 @@ type ModelConfig struct {
 	Name        string  `yaml:"name"`
 	Temperature float32 `yaml:"temperature"`
 	MaxTokens   int     `yaml:"max_tokens"`
+	APIBaseURL  string  `yaml:"api_base_url"`  // 兼容 OpenAI API 格式的地址
+	APIKey      string  `yaml:"api_key"`       // API 密钥
 }
 
 type RuntimeConfig struct {
