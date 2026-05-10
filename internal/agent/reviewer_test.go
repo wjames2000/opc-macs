@@ -76,7 +76,7 @@ func TestBuildReviewPrompt(t *testing.T) {
 
 func TestReviewerReviewWithResult(t *testing.T) {
 	r := NewReviewer("test-model")
-	result, err := r.Review(nil, map[string]string{"test": "data"}, []string{"check1"})
+	result, err := r.Review(nil, map[string]string{"test": "data"}, []string{"check1"}, "")
 	if err != nil {
 		t.Fatalf("Review should not error: %v", err)
 	}

@@ -17,11 +17,6 @@ type TokenUsage struct {
 	ModelName    string // 审计：实际调用的模型名称
 }
 
-type ExecutionResult struct {
-	Data       interface{}
-	TokenUsage TokenUsage
-}
-
 type CheckResult struct {
 	Item   string
 	Passed bool
@@ -34,6 +29,7 @@ type ReviewResult struct {
 	CheckResults []CheckResult
 	Summary      string
 	ShouldRetry  bool
+	Trace        string // 模型思考过程追踪
 }
 
 // ModelClient 模型调用接口，每个插件通过 opts 中的 "model_client" 获取
@@ -48,9 +44,16 @@ type ModelRequest struct {
 }
 
 type ModelResponse struct {
-	Content     string
+	Content      string
 	InputTokens  int
 	OutputTokens int
+	RawResponse  string // 模型原始响应（含思考过程）
+}
+
+type ExecutionResult struct {
+	Data       interface{}
+	TokenUsage TokenUsage
+	RawTrace   string // 模型原始思考过程
 }
 
 type AgentPlugin interface {

@@ -205,9 +205,24 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 		fmt.Println("[提示] 当前输出为模拟内容。配置 model.api_base_url 可获取真实 AI 生成结果")
 	}
 
+	// 输出 Agent 思考过程
+	if execResult.RawTrace != "" {
+		fmt.Println("\n┌─── Agent 思考过程 ────────────────────────────")
+		fmt.Println(execResult.RawTrace)
+		fmt.Println("└──────────────────────────────────────────────────")
+	}
+
 	// 4. Reviewer 审查
 	reviewResult, _ := reviewer.Review(taskCtx, execResult.Data,
-		extractCheckpoints(routeResult.Info))
+		extractCheckpoints(routeResult.Info), execResult.RawTrace)
+
+	// 输出审查思考过程
+	if reviewResult != nil && reviewResult.Trace != "" {
+		fmt.Println("\n┌─── 审查思考过程 ───────────────────────────────")
+		fmt.Println(reviewResult.Trace)
+		fmt.Println("└──────────────────────────────────────────────────")
+	}
+
 	if reviewResult != nil && !reviewResult.Passed {
 		fmt.Printf("[审查] 未通过 (评分 %.1f/5.0)：%s\n",
 			reviewResult.Score, reviewResult.Summary)
@@ -217,7 +232,7 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 			execResult, err = routeResult.Plugin.Execute(taskCtx, input, opts)
 			if err == nil {
 				reviewResult, _ = reviewer.Review(taskCtx, execResult.Data,
-					extractCheckpoints(routeResult.Info))
+					extractCheckpoints(routeResult.Info), execResult.RawTrace)
 				if reviewResult != nil && reviewResult.Passed {
 					fmt.Println("[审查] 重试后通过")
 				}

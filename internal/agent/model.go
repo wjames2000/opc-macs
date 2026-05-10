@@ -101,6 +101,9 @@ func (c *httpClient) Call(ctx context.Context, req runtime.ModelRequest) (*runti
 		return nil, fmt.Errorf("model: API error %d: %s", resp.StatusCode, string(respBody))
 	}
 
+	// Save raw response for thinking trace
+	rawStr := string(respBody)
+
 	var chatResp chatResponse
 	if err := json.Unmarshal(respBody, &chatResp); err != nil {
 		return nil, fmt.Errorf("model: parse response: %w", err)
@@ -114,6 +117,7 @@ func (c *httpClient) Call(ctx context.Context, req runtime.ModelRequest) (*runti
 		Content:      chatResp.Choices[0].Message.Content,
 		InputTokens:  chatResp.Usage.PromptTokens,
 		OutputTokens: chatResp.Usage.CompletionTokens,
+		RawResponse:  rawStr,
 	}, nil
 }
 

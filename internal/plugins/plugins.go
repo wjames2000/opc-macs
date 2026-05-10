@@ -103,6 +103,7 @@ func (p *CopywriterPlugin) Execute(ctx context.Context, input string, opts map[s
 			OutputTokens: resp.OutputTokens,
 			ModelName:    modelName,
 		},
+		RawTrace: resp.RawResponse,
 	}, nil
 }
 
@@ -142,9 +143,23 @@ func (p *CopywriterPlugin) Review(_ context.Context, output interface{}) (*runti
 }
 
 func devCopywrite(input string) *runtime.ExecutionResult {
-	// Intelligent dev mode: generate context-aware output from keywords in input
 	product := extractProductName(input)
 	style := detectStyle(input)
+
+	trace := fmt.Sprintf(`【思考过程】
+分析输入：「%s」
+提取产品名：「%s」
+检测风格：「%s」
+
+推理步骤：
+1. 理解需求 → 产品推广文案生成
+2. 分析产品特点 → 从输入中提取关键信息
+3. 选择文案风格 → 根据产品类型匹配
+4. 生成三段式文案 → 短/长/社交媒体
+
+风格匹配依据：
+- 产品类型 → %s风格
+- 目标受众 → 根据产品匹配`, input, product, style, style)
 
 	return &runtime.ExecutionResult{
 		Data: map[string]interface{}{
@@ -154,9 +169,10 @@ func devCopywrite(input string) *runtime.ExecutionResult {
 			"style":       style,
 		},
 		TokenUsage: runtime.TokenUsage{ModelName: "dev-mode"},
+		RawTrace:   trace,
 	}
 }
-
+ 
 // extractProductName tries to extract the product/brand name from input
 func extractProductName(input string) string {
 	// Remove common prefixes
@@ -315,37 +331,69 @@ func quickSpamCheck(body string) string {
 func devClassify(input string) *runtime.ExecutionResult {
 	lower := strings.ToLower(input)
 	cat, urgency, reason := "咨询", "低", "常规咨询"
+	matchReason := "未命中特殊规则"
 
 	if strings.Contains(lower, "投诉") || strings.Contains(lower, "退款") || strings.Contains(lower, "赔偿") {
 		cat, urgency, reason = "投诉", "高", "检测到投诉/退款关键词"
+		matchReason = "命中投诉关键词规则"
 	} else if strings.Contains(lower, "合作") || strings.Contains(lower, "商务") || strings.Contains(lower, "partner") {
 		cat, urgency, reason = "合作", "中", "检测到合作意向"
+		matchReason = "命中合作关键词规则"
 	} else if strings.Contains(lower, "免费") || strings.Contains(lower, "中奖") || strings.Contains(lower, "转账") {
 		cat, urgency, reason = "垃圾", "低", "命中垃圾邮件规则"
+		matchReason = "命中垃圾关键词规则"
 	} else if strings.Contains(lower, "咨询") || strings.Contains(lower, "请问") || strings.Contains(lower, "help") || strings.Contains(lower, "how") {
 		cat, urgency, reason = "咨询", "中", "检测到咨询内容"
+		matchReason = "命中咨询关键词规则"
 	}
 
-	reply := ""
-	switch cat {
-	case "投诉":
-		reply = fmt.Sprintf("尊敬的客户，\n\n非常抱歉给您带来不便。我们已经收到您的投诉（「%s」），正在加急处理中，预计24小时内会有专人联系您。\n\n感谢您的耐心与理解。", extractProductName(input))
-	case "合作":
-		reply = fmt.Sprintf("您好，\n\n感谢您的合作意向！我们非常期待与您进一步沟通。\n\n关于%s，请提供以下信息以便我们更好地了解您的需求：\n1. 公司/个人简介\n2. 合作方式设想\n3. 联系方式", extractProductName(input))
-	case "咨询":
-		reply = fmt.Sprintf("您好，\n\n感谢您的来信。关于您咨询的问题，我们的回复如下：\n\n「%s」\n\n如有其他疑问，欢迎随时联系我们。", input)
-	case "垃圾":
-		reply = ""
-	}
+	trace := fmt.Sprintf(`【思考过程】
+分析输入：「%s」
+匹配规则：%s
+
+分类决策：
+- 类别：%s
+- 紧急程度：%s
+- 理由：%s
+
+回复策略：
+%s`, input, matchReason, cat, urgency, reason,
+		mapReplyStrategy(cat))
 
 	return &runtime.ExecutionResult{
 		Data: map[string]interface{}{
-			"category":         cat,
-			"reason":           reason,
-			"reply_suggestion": reply,
+			"category": cat, "reason": reason,
+			"reply_suggestion": buildDevReply(cat, input),
 			"urgency":          urgency,
 		},
 		TokenUsage: runtime.TokenUsage{ModelName: "dev-mode"},
+		RawTrace:   trace,
+	}
+}
+
+func mapReplyStrategy(cat string) string {
+	switch cat {
+	case "投诉":
+		return "- 态度：诚恳道歉\n- 内容：说明处理流程\n- 跟进：承诺24小时联系"
+	case "合作":
+		return "- 态度：积极欢迎\n- 内容：请求更多信息\n- 跟进：表明合作意愿"
+	case "垃圾":
+		return "- 不回复（标记为垃圾邮件）"
+	default:
+		return "- 态度：专业热情\n- 内容：针对问题回复\n- 跟进：邀请进一步沟通"
+	}
+}
+
+func buildDevReply(cat, input string) string {
+	switch cat {
+	case "投诉":
+		return fmt.Sprintf("尊敬的客户，非常抱歉给您带来不便。我们已经收到您的投诉（「%s」），正在加急处理中，预计24小时内会有专人联系您。感谢您的耐心与理解。", extractProductName(input))
+	case "合作":
+		return fmt.Sprintf("您好，感谢您的合作意向！我们非常期待与您进一步沟通。关于%s，请提供以下信息以便我们更好地了解您的需求：\n1. 公司/个人简介\n2. 合作方式设想\n3. 联系方式", extractProductName(input))
+	case "咨询":
+		return fmt.Sprintf("您好，感谢您的来信。关于您咨询的问题，我们的回复如下：\n\n「%s」\n\n如有其他疑问，欢迎随时联系我们。", input)
+	default:
+		return ""
 	}
 }
 
@@ -461,6 +509,19 @@ func (p *XHSPosterPlugin) Review(_ context.Context, output interface{}) (*runtim
 
 func devXHSPost(input string) *runtime.ExecutionResult {
 	product := extractProductName(input)
+
+	trace := fmt.Sprintf(`【思考过程】
+分析输入：「%s」
+提取产品名：「%s」
+
+内容策略：
+1. 标题 → emoji + 产品名 + 吸引力词汇（姐妹们/绝了）
+2. 正文 → 结构：结论→颜值→使用感→性价比→总结
+3. 标签 → #好物推荐 #种草 等 5 个热门标签
+4. 配图 → 整体+细节+场景 3 张建议
+
+风格定位：小红书种草笔记（亲切自然语气）`, input, product)
+
 	return &runtime.ExecutionResult{
 		Data: map[string]interface{}{
 			"title":            fmt.Sprintf("姐妹们！%s真的太香了💕", truncate(product, 12)),
@@ -470,6 +531,7 @@ func devXHSPost(input string) *runtime.ExecutionResult {
 			"style":            "好物推荐",
 		},
 		TokenUsage: runtime.TokenUsage{ModelName: "dev-mode"},
+		RawTrace:   trace,
 	}
 }
 
