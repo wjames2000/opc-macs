@@ -1,0 +1,270 @@
+package main
+
+import (
+	"bufio"
+	"context"
+	"flag"
+	"fmt"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/wjames2000/opc-macs/internal/agent"
+	"github.com/wjames2000/opc-macs/internal/config"
+	"github.com/wjames2000/opc-macs/internal/hitl"
+	"github.com/wjames2000/opc-macs/internal/memory"
+	"github.com/wjames2000/opc-macs/internal/runtime"
+)
+
+var (
+	version = "0.1.0"
+	buildID = "dev"
+)
+
+func main() {
+	configPath := flag.String("config", "config.yaml", "配置文件路径")
+	showVersion := flag.Bool("version", false, "显示版本")
+	flag.Parse()
+
+	if *showVersion {
+		fmt.Printf("OPC-Agent v%s (build %s)\n", version, buildID)
+		os.Exit(0)
+	}
+
+	// 加载配置
+	cfg, err := config.Load(*configPath)
+	if err != nil {
+		log.Fatalf("配置加载失败：%v", err)
+	}
+
+	fmt.Printf("OPC-Agent v%s 启动中...\n", version)
+
+	// 初始化插件加载器
+	pluginLoader := runtime.NewLoader(cfg.Runtime.PluginsDir)
+	if err := pluginLoader.LoadAll(); err != nil {
+		log.Fatalf("插件加载失败：%v", err)
+	}
+	fmt.Printf("[系统] 已加载 %d 个 Agent 插件\n", pluginLoader.Count())
+
+	if pluginLoader.Count() == 0 {
+		fmt.Println("[警告] 没有加载到任何 Agent 插件，请检查 plugins_dir 配置")
+	}
+
+	// 初始化记忆引擎
+	memoryStore, err := memory.NewEmbeddedEngine(cfg.Memory.StorePath)
+	if err != nil {
+		log.Printf("[警告] 记忆引擎初始化失败：%v，使用空引擎降级运行", err)
+		memoryStore = memory.NewEmptyEngine()
+	}
+	defer memoryStore.Close()
+
+	count, _ := memoryStore.Count()
+	fmt.Printf("[系统] 记忆引擎就绪，已存储 %d 条记忆\n", count)
+
+	// 初始化 HITL
+	hitlHandler := hitl.NewHandler(os.Stdin, os.Stdout)
+
+	// 初始化 Router
+	router := agent.NewRouter(pluginLoader, cfg.Model.Name)
+
+	// 初始化 Reviewer
+	reviewer := agent.NewReviewer(cfg.Model.Name)
+
+	// 信号处理
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-sigCh
+		fmt.Println("\n\n正在退出...")
+		memoryStore.Close()
+		os.Exit(0)
+	}()
+
+	// 启动 REPL
+	fmt.Println("\nOPC-Agent 已就绪，输入任务描述开始工作，输入 exit 退出。")
+	printHelp()
+
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		fmt.Print("\n> ")
+		if !scanner.Scan() {
+			break
+		}
+		input := scanner.Text()
+		if input == "" {
+			continue
+		}
+		if input == "exit" || input == "quit" {
+			break
+		}
+		if input == "help" {
+			printHelp()
+			continue
+		}
+		if input == "plugins" {
+			printPlugins(pluginLoader)
+			continue
+		}
+		if input == "stats" {
+			printStats(memoryStore)
+			continue
+		}
+
+		processTask(context.Background(), input, pluginLoader, router, reviewer, memoryStore, hitlHandler, cfg)
+	}
+
+	fmt.Println("\n再见！")
+}
+
+func processTask(ctx context.Context, input string, loader *runtime.Loader,
+	router *agent.Router, reviewer *agent.Reviewer,
+	store memory.MemoryStore, hitlHandler *hitl.Handler, cfg *config.Config) {
+
+	startTime := time.Now()
+	fmt.Printf("\n[任务] 处理中：%s\n", input)
+
+	// 超时控制
+	taskCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	// 1. Router 分发
+	routeResult, err := router.Route(taskCtx, input)
+	if err != nil {
+		fmt.Printf("[错误] 路由失败：%v\n", err)
+		return
+	}
+	if routeResult.Action == agent.RouteActionUnknown {
+		fmt.Printf("%s\n", routeResult.Message)
+		return
+	}
+
+	fmt.Printf("[路由] → %s\n", routeResult.Info.Name)
+
+	// 2. 检索记忆
+	memories, _ := store.Recall(taskCtx, input, cfg.Memory.TopK)
+	if len(memories) > 0 {
+		fmt.Printf("[记忆] 找到 %d 条相关记忆\n", len(memories))
+	}
+
+	// 3. 调用插件 Execute
+	opts := map[string]interface{}{
+		"memories": memories,
+	}
+	execResult, err := routeResult.Plugin.Execute(taskCtx, input, opts)
+	if err != nil {
+		fmt.Printf("[错误] Agent 执行失败：%v\n", err)
+		return
+	}
+	fmt.Printf("[执行] 完成 (token: in=%d out=%d)\n",
+		execResult.TokenUsage.InputTokens, execResult.TokenUsage.OutputTokens)
+
+	// 4. Reviewer 审查
+	reviewResult, _ := reviewer.Review(taskCtx, execResult.Data,
+		extractCheckpoints(routeResult.Info))
+	if reviewResult != nil && !reviewResult.Passed {
+		fmt.Printf("[审查] 未通过 (评分 %.1f/5.0)：%s\n",
+			reviewResult.Score, reviewResult.Summary)
+
+		if reviewResult.ShouldRetry {
+			fmt.Println("[重试] 正在重试...")
+			execResult, err = routeResult.Plugin.Execute(taskCtx, input, opts)
+			if err == nil {
+				reviewResult, _ = reviewer.Review(taskCtx, execResult.Data,
+					extractCheckpoints(routeResult.Info))
+				if reviewResult != nil && reviewResult.Passed {
+					fmt.Println("[审查] 重试后通过")
+				}
+			}
+		}
+	} else {
+		fmt.Printf("[审查] 通过 (评分 %.1f/5.0)\n", reviewResult.Score)
+	}
+
+	// 5. HITL 检查
+	if routeResult.Info.RequiresHITL {
+		op := hitl.Operation{
+			Type:        routeResult.Info.Name,
+			Description: fmt.Sprintf("Agent '%s' 请求执行操作", routeResult.Info.Name),
+		}
+		approved, err := hitlHandler.Confirm(taskCtx, op)
+		if err != nil {
+			fmt.Printf("[HITL] 错误：%v\n", err)
+			return
+		}
+		if !approved {
+			fmt.Println("[HITL] 操作已取消")
+			return
+		}
+		fmt.Println("[HITL] 已确认")
+	}
+
+	// 6. 写入记忆
+	keyDecisions := extractKeyDecisions(execResult.Data)
+	entry := memory.BuildMemoryEntry(
+		routeResult.Info.Name,
+		input,
+		fmt.Sprintf("%+v", execResult.Data),
+		keyDecisions,
+		map[string]string{
+			"model":      cfg.Model.Name,
+			"tokens_in":  fmt.Sprintf("%d", execResult.TokenUsage.InputTokens),
+			"tokens_out": fmt.Sprintf("%d", execResult.TokenUsage.OutputTokens),
+		},
+	)
+	if err := store.Store(taskCtx, entry); err != nil {
+		fmt.Printf("[警告] 记忆写入失败：%v\n", err)
+	} else {
+		fmt.Println("[记忆] 已存储")
+	}
+
+	// 7. 输出结果
+	elapsed := time.Since(startTime)
+	fmt.Printf("\n══════════ 输出结果 (%.2fs) ══════════\n", elapsed.Seconds())
+	fmt.Printf("%+v\n", execResult.Data)
+	fmt.Printf("══════════════════════════════════════\n")
+}
+
+func printHelp() {
+	fmt.Println("\n可用命令：")
+	fmt.Println("  <自然语言>  输入任务描述开始工作")
+	fmt.Println("  plugins     查看已加载的 Agent 插件")
+	fmt.Println("  stats       查看系统统计信息")
+	fmt.Println("  help        显示帮助")
+	fmt.Println("  exit        退出")
+}
+
+func printPlugins(loader *runtime.Loader) {
+	plugins := loader.List()
+	if len(plugins) == 0 {
+		fmt.Println("没有已加载的 Agent 插件")
+		return
+	}
+	fmt.Printf("\n已加载的 Agent 插件（%d 个）：\n", len(plugins))
+	for _, p := range plugins {
+		fmt.Printf("  - %s v%s: %s\n", p.Name, p.Version, p.Summary)
+	}
+}
+
+func printStats(store memory.MemoryStore) {
+	count, _ := store.Count()
+	fmt.Printf("\n系统统计：\n")
+	fmt.Printf("  记忆条目数：%d\n", count)
+}
+
+func extractCheckpoints(info runtime.PluginInfo) []string {
+	return info.Tags
+}
+
+func extractKeyDecisions(data interface{}) []string {
+	if m, ok := data.(map[string]interface{}); ok {
+		keys := make([]string, 0, len(m))
+		for k := range m {
+			keys = append(keys, k)
+		}
+		return keys
+	}
+	return nil
+}

@@ -1,0 +1,23 @@
+app:
+  name: "opc-agent"
+  version: "0.1.0"
+
+model:
+  provider: "gemini"
+  name: "gemini-2.0-flash"
+  temperature: 0.3
+  max_tokens: 4096
+
+runtime:
+  plugins_dir: "./build/plugins"
+
+memory:
+  engine: "embedded"
+  top_k: 5
+  similarity_threshold: 0.7
+  store_path: "./data/memory.json"
+
+harness:
+  max_steps_per_agent: 10
+  hitl_operations: ["send_email", "publish_post"]
+  forbidden_words: ["guaranteed", "100% safe", "confidential_data"]
