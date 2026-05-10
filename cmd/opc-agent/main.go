@@ -147,10 +147,19 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 		return
 	}
 
+	// 当使用 @agent_name 明确指定时，使用 @ 后面的内容作为任务输入
+	taskInput := input
+	if routeResult.Message != "" {
+		taskInput = routeResult.Message
+	}
+
 	fmt.Printf("[路由] → %s\n", routeResult.Info.Name)
+	if taskInput != input {
+		fmt.Printf("[任务] 任务描述：%s\n", taskInput)
+	}
 
 	// 2. 检索记忆
-	memories, _ := store.Recall(taskCtx, input, cfg.Memory.TopK)
+	memories, _ := store.Recall(taskCtx, taskInput, cfg.Memory.TopK)
 	if len(memories) > 0 {
 		fmt.Printf("[记忆] 找到 %d 条相关记忆\n", len(memories))
 	}
@@ -159,7 +168,7 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 	opts := map[string]interface{}{
 		"memories": memories,
 	}
-	execResult, err := routeResult.Plugin.Execute(taskCtx, input, opts)
+	execResult, err := routeResult.Plugin.Execute(taskCtx, taskInput, opts)
 	if err != nil {
 		fmt.Printf("[错误] Agent 执行失败：%v\n", err)
 		return
@@ -211,7 +220,7 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 	keyDecisions := extractKeyDecisions(execResult.Data)
 	entry := memory.BuildMemoryEntry(
 		routeResult.Info.Name,
-		input,
+		taskInput,
 		fmt.Sprintf("%+v", execResult.Data),
 		keyDecisions,
 		map[string]string{
@@ -235,11 +244,12 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 
 func printHelp() {
 	fmt.Println("\n可用命令：")
-	fmt.Println("  <自然语言>  输入任务描述开始工作")
-	fmt.Println("  plugins     查看已加载的 Agent 插件")
-	fmt.Println("  stats       查看系统统计信息")
-	fmt.Println("  help        显示帮助")
-	fmt.Println("  exit        退出")
+	fmt.Println("  @<Agent名> <任务>  指定 Agent 处理任务（如 @copywriter 写文案）")
+	fmt.Println("  <自然语言>          由 Router 自动识别意图并分发")
+	fmt.Println("  plugins             查看已加载的 Agent 插件")
+	fmt.Println("  stats               查看系统统计信息")
+	fmt.Println("  help                显示帮助")
+	fmt.Println("  exit                退出")
 }
 
 func printPlugins(loader *runtime.Loader) {

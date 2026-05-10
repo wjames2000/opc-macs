@@ -131,10 +131,27 @@ func parseClassifyResponse(raw string) (string, float32, error) {
 }
 
 func (r *Router) Route(ctx context.Context, input string) (*RouteResult, error) {
-	if strings.TrimSpace(input) == "" {
+	trimmed := strings.TrimSpace(input)
+	if trimmed == "" {
 		return &RouteResult{
 			Action:  RouteActionUnknown,
 			Message: "请输入任务描述。",
+		}, nil
+	}
+
+	// Check for explicit agent mention: @agent_name ...
+	if agentName, task, found := parseAgentMention(trimmed); found {
+		if plugin, ok := r.plugins.Get(agentName); ok {
+			return &RouteResult{
+				Action: RouteActionDispatch,
+				Plugin: plugin,
+				Info:   plugin.Info(),
+				Message: task,
+			}, nil
+		}
+		return &RouteResult{
+			Action:  RouteActionUnknown,
+			Message: fmt.Sprintf("未找到 Agent '%s'。可用 Agent：%s", agentName, r.buildAvailableList()),
 		}, nil
 	}
 
@@ -165,6 +182,27 @@ func (r *Router) Route(ctx context.Context, input string) (*RouteResult, error) 
 		Plugin: plugin,
 		Info:   plugin.Info(),
 	}, nil
+}
+
+// parseAgentMention checks if input starts with @agent_name, returns (name, rest, found)
+func parseAgentMention(input string) (string, string, bool) {
+	if !strings.HasPrefix(input, "@") {
+		return "", "", false
+	}
+	rest := input[1:] // strip @
+	idx := strings.IndexAny(rest, " \t\n")
+	var agentName, task string
+	if idx < 0 {
+		agentName = rest
+		task = ""
+	} else {
+		agentName = rest[:idx]
+		task = strings.TrimSpace(rest[idx+1:])
+	}
+	if agentName == "" {
+		return "", "", false
+	}
+	return agentName, task, true
 }
 
 // fallbackClassify uses keyword matching when LLM is unavailable.
