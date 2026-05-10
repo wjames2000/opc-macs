@@ -244,7 +244,8 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 
 func printHelp() {
 	fmt.Println("\n可用命令：")
-	fmt.Println("  @<Agent名> <任务>  指定 Agent 处理任务（如 @copywriter 写文案）")
+	fmt.Println("  @<Agent名> <任务>  指定 Agent 处理（如 @copywriter 写文案）")
+	fmt.Println("  #<技能> <任务>     指定技能处理（如 #文案 推广文案、#邮件 投诉信）")
 	fmt.Println("  <自然语言>          由 Router 自动识别意图并分发")
 	fmt.Println("  plugins             查看已加载的 Agent 插件")
 	fmt.Println("  stats               查看系统统计信息")

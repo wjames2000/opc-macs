@@ -143,9 +143,9 @@ func (r *Router) Route(ctx context.Context, input string) (*RouteResult, error) 
 	if agentName, task, found := parseAgentMention(trimmed); found {
 		if plugin, ok := r.plugins.Get(agentName); ok {
 			return &RouteResult{
-				Action: RouteActionDispatch,
-				Plugin: plugin,
-				Info:   plugin.Info(),
+				Action:  RouteActionDispatch,
+				Plugin:  plugin,
+				Info:    plugin.Info(),
 				Message: task,
 			}, nil
 		}
@@ -153,6 +153,18 @@ func (r *Router) Route(ctx context.Context, input string) (*RouteResult, error) 
 			Action:  RouteActionUnknown,
 			Message: fmt.Sprintf("未找到 Agent '%s'。可用 Agent：%s", agentName, r.buildAvailableList()),
 		}, nil
+	}
+
+	// Check for skill mention: #skill_name ...
+	if agentName, task, found := r.parseSkillMention(trimmed); found {
+		if plugin, ok := r.plugins.Get(agentName); ok {
+			return &RouteResult{
+				Action:  RouteActionDispatch,
+				Plugin:  plugin,
+				Info:    plugin.Info(),
+				Message: task,
+			}, nil
+		}
 	}
 
 	// 1. Try LLM-based classification
@@ -182,6 +194,54 @@ func (r *Router) Route(ctx context.Context, input string) (*RouteResult, error) 
 		Plugin: plugin,
 		Info:   plugin.Info(),
 	}, nil
+}
+
+// buildSkillIndex builds a reverse lookup: keyword → agent_name
+// from agent names, tags, summaries, and Chinese keywords.
+func (r *Router) buildSkillIndex() map[string]string {
+	idx := make(map[string]string)
+	for _, p := range r.plugins.List() {
+		// From agent name itself
+		idx[strings.ToLower(p.Name)] = p.Name
+		// From tags
+		for _, tag := range p.Tags {
+			idx[strings.ToLower(tag)] = p.Name
+		}
+		// From Chinese keyword map
+		if ckw, ok := chineseKeywords[p.Name]; ok {
+			for _, kw := range ckw {
+				idx[strings.ToLower(kw)] = p.Name
+			}
+		}
+	}
+	return idx
+}
+
+// parseSkillMention checks if input starts with #skill, returns (agentName, rest, found)
+func (r *Router) parseSkillMention(input string) (string, string, bool) {
+	if !strings.HasPrefix(input, "#") {
+		return "", "", false
+	}
+	rest := input[1:] // strip #
+	idx := strings.IndexAny(rest, " \t\n")
+	var skillName, task string
+	if idx < 0 {
+		skillName = rest
+		task = ""
+	} else {
+		skillName = rest[:idx]
+		task = strings.TrimSpace(rest[idx+1:])
+	}
+	if skillName == "" {
+		return "", "", false
+	}
+
+	idxMap := r.buildSkillIndex()
+	agentName, ok := idxMap[strings.ToLower(skillName)]
+	if !ok {
+		return "", "", false
+	}
+	return agentName, task, true
 }
 
 // parseAgentMention checks if input starts with @agent_name, returns (name, rest, found)
