@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EmailClassificationOutput",
+  "type": "object",
+  "required": ["category", "reason", "reply_suggestion"],
+  "properties": {
+    "category": {
+      "type": "string",
+      "description": "邮件类别",
+      "enum": ["咨询", "投诉", "合作", "垃圾"]
+    },
+    "reason": {
+      "type": "string",
+      "description": "分类理由（20-50字）",
+      "minLength": 20,
+      "maxLength": 50
+    },
+    "reply_suggestion": {
+      "type": "string",
+      "description": "回复建议草稿"
+    },
+    "urgency": {
+      "type": "string",
+      "description": "紧急程度",
+      "enum": ["低", "中", "高"]
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "XHSPostOutput",
+  "type": "object",
+  "required": ["title", "body", "hashtags", "image_suggestions", "style"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "笔记标题（≤20字，建议含emoji）",
+      "maxLength": 20
+    },
+    "body": {
+      "type": "string",
+      "description": "笔记正文（200-500字，含emoji分段）",
+      "minLength": 200,
+      "maxLength": 500
+    },
+    "hashtags": {
+      "type": "array",
+      "description": "话题标签（5-10个）",
+      "items": {"type": "string"},
+      "minItems": 5,
+      "maxItems": 10
+    },
+    "image_suggestions": {
+      "type": "array",
+      "description": "配图描述建议（2-3张）",
+      "items": {"type": "string"},
+      "minItems": 2,
+      "maxItems": 3
+    },
+    "style": {
+      "type": "string",
+      "description": "笔记风格",
+      "enum": ["好物推荐", "使用心得", "开箱测评", "生活记录", "教程攻略"]
+    }
+  }
+}
