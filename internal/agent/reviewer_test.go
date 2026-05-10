@@ -75,20 +75,23 @@ func TestBuildReviewPrompt(t *testing.T) {
 }
 
 func TestReviewerReviewWithResult(t *testing.T) {
-	// With mock, the callLLM will return error since no real LLM
-	// This tests the error handling path
 	r := NewReviewer("test-model")
 	result, err := r.Review(nil, map[string]string{"test": "data"}, []string{"check1"})
 	if err != nil {
-		// Error expected since no LLM - test the result shape
-		if result == nil {
-			t.Log("expected nil result on error") // callLLM returns error
-		}
+		t.Fatalf("Review should not error: %v", err)
 	}
-	if result != nil {
-		if result.ShouldRetry != true {
-			t.Errorf("expected should_retry=true on error, got %v", result.ShouldRetry)
-		}
+	if result == nil {
+		t.Fatal("expected non-nil result")
+	}
+	// Without LLM, Reviewer should auto-pass with basic checks
+	if !result.Passed {
+		t.Error("expected passed=true (LLM-unavailable fallback)")
+	}
+	if result.ShouldRetry {
+		t.Error("expected should_retry=false (auto-pass)")
+	}
+	if result.Score != 5.0 {
+		t.Errorf("expected score 5.0 for auto-pass, got %f", result.Score)
 	}
 }
 

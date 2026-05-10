@@ -19,6 +19,18 @@ func NewLoader(pluginsDir string) *Loader {
 	}
 }
 
+// Register adds a plugin directly (used for embedded/dev mode)
+func (l *Loader) Register(agent AgentPlugin) error {
+	info := agent.Info()
+	if _, exists := l.plugins[info.Name]; exists {
+		return fmt.Errorf("agent '%s' already registered", info.Name)
+	}
+	l.plugins[info.Name] = agent
+	fmt.Printf("[Plugin] registered: %s v%s\n", info.Name, info.Version)
+	return nil
+}
+
+// LoadAll scans the plugins directory and loads .so files
 func (l *Loader) LoadAll() error {
 	entries, err := os.ReadDir(l.pluginsDir)
 	if err != nil {
@@ -52,14 +64,7 @@ func (l *Loader) loadFile(soPath string) error {
 		return fmt.Errorf("plugin %s does not implement AgentPlugin interface", soPath)
 	}
 
-	info := agent.Info()
-	if _, exists := l.plugins[info.Name]; exists {
-		return fmt.Errorf("agent '%s' already registered", info.Name)
-	}
-
-	l.plugins[info.Name] = agent
-	fmt.Printf("[Plugin] loaded: %s v%s\n", info.Name, info.Version)
-	return nil
+	return l.Register(agent)
 }
 
 func (l *Loader) Get(name string) (AgentPlugin, bool) {

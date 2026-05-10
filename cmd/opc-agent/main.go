@@ -15,6 +15,7 @@ import (
 	"github.com/wjames2000/opc-macs/internal/config"
 	"github.com/wjames2000/opc-macs/internal/hitl"
 	"github.com/wjames2000/opc-macs/internal/memory"
+	"github.com/wjames2000/opc-macs/internal/plugins"
 	"github.com/wjames2000/opc-macs/internal/runtime"
 )
 
@@ -43,14 +44,19 @@ func main() {
 
 	// 初始化插件加载器
 	pluginLoader := runtime.NewLoader(cfg.Runtime.PluginsDir)
+
+	// 尝试从 .so 文件加载插件（Linux 生产模式）
 	if err := pluginLoader.LoadAll(); err != nil {
-		log.Fatalf("插件加载失败：%v", err)
+		fmt.Printf("[系统] .so 插件目录不可用（%v），切换到内嵌模式\n", err)
 	}
-	fmt.Printf("[系统] 已加载 %d 个 Agent 插件\n", pluginLoader.Count())
 
 	if pluginLoader.Count() == 0 {
-		fmt.Println("[警告] 没有加载到任何 Agent 插件，请检查 plugins_dir 配置")
+		fmt.Println("[系统] 使用内嵌 Agent 插件（开发模式）")
+		if err := plugins.RegisterAll(pluginLoader); err != nil {
+			log.Fatalf("内嵌插件注册失败：%v", err)
+		}
 	}
+	fmt.Printf("[系统] 已加载 %d 个 Agent 插件\n", pluginLoader.Count())
 
 	// 初始化记忆引擎
 	memoryStore, err := memory.NewEmbeddedEngine(cfg.Memory.StorePath)

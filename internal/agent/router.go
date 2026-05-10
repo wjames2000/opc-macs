@@ -4,11 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/wjames2000/opc-macs/internal/runtime"
 )
+
+// PluginSource abstracts plugin discovery for testability
+type PluginSource interface {
+	Get(name string) (runtime.AgentPlugin, bool)
+	List() []runtime.PluginInfo
+	Count() int
+}
 
 type RouteAction int
 
@@ -31,16 +37,16 @@ type classifyResponse struct {
 }
 
 type Router struct {
-	loader *runtime.Loader
-	model  string
+	plugins PluginSource
+	model   string
 }
 
-func NewRouter(loader *runtime.Loader, model string) *Router {
-	return &Router{loader: loader, model: model}
+func NewRouter(plugins PluginSource, model string) *Router {
+	return &Router{plugins: plugins, model: model}
 }
 
 func (r *Router) buildL1Context() string {
-	plugins := r.loader.List()
+	plugins := r.plugins.List()
 	var sb strings.Builder
 	sb.WriteString("你是一个路由智能体，根据用户输入判断应该分发到哪个 Agent。\n\n")
 	sb.WriteString("可用 Agent：\n")
@@ -69,7 +75,7 @@ const classifyPromptTemplate = `
 `
 
 func (r *Router) buildClassifyPrompt(input string) string {
-	plugins := r.loader.List()
+	plugins := r.plugins.List()
 	var pluginLines strings.Builder
 	for _, p := range plugins {
 		pluginLines.WriteString(fmt.Sprintf("- %s：%s\n", p.Name, p.Summary))
@@ -90,10 +96,28 @@ func (r *Router) classify(ctx context.Context, input string) (string, float32, e
 	return parseClassifyResponse(response)
 }
 
-var jsonExtractRe = regexp.MustCompile(`\{[^{}]*\}`)
+func extractFirstJSON(raw string) string {
+	start := strings.Index(raw, "{")
+	if start < 0 {
+		return ""
+	}
+	depth := 0
+	for i := start; i < len(raw); i++ {
+		switch raw[i] {
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				return raw[start : i+1]
+			}
+		}
+	}
+	return ""
+}
 
 func parseClassifyResponse(raw string) (string, float32, error) {
-	matches := jsonExtractRe.FindString(raw)
+	matches := extractFirstJSON(raw)
 	if matches == "" {
 		return "", 0, fmt.Errorf("router: no JSON found in response")
 	}
@@ -114,12 +138,11 @@ func (r *Router) Route(ctx context.Context, input string) (*RouteResult, error) 
 		}, nil
 	}
 
+	// 1. Try LLM-based classification
 	agentName, confidence, err := r.classify(ctx, input)
-	if err != nil {
-		return &RouteResult{
-			Action:  RouteActionUnknown,
-			Message: "识别失败，请重新描述。",
-		}, nil
+	if err != nil || agentName == "unknown" || confidence < 0.4 {
+		// 2. Fallback: keyword-based classification when LLM unavailable
+		agentName, confidence = r.fallbackClassify(input)
 	}
 
 	if agentName == "unknown" || confidence < 0.4 {
@@ -129,7 +152,7 @@ func (r *Router) Route(ctx context.Context, input string) (*RouteResult, error) 
 		}, nil
 	}
 
-	plugin, ok := r.loader.Get(agentName)
+	plugin, ok := r.plugins.Get(agentName)
 	if !ok {
 		return &RouteResult{
 			Action:  RouteActionUnknown,
@@ -144,8 +167,98 @@ func (r *Router) Route(ctx context.Context, input string) (*RouteResult, error) 
 	}, nil
 }
 
+// fallbackClassify uses keyword matching when LLM is unavailable.
+// Builds keyword maps from plugin names, summaries, tags, and Chinese word map.
+func (r *Router) fallbackClassify(input string) (string, float32) {
+	plugins := r.plugins.List()
+	if len(plugins) == 0 {
+		return "unknown", 0
+	}
+
+	inputLower := strings.ToLower(input)
+
+	type match struct {
+		name  string
+		score int
+	}
+	var best, second match
+
+	for _, p := range plugins {
+		score := 0
+		keywords := r.buildKeywords(p)
+
+		for _, kw := range keywords {
+			if strings.Contains(inputLower, strings.ToLower(kw)) {
+				score++
+			}
+		}
+
+		if score > best.score {
+			second = best
+			best = match{p.Name, score}
+		} else if score > second.score {
+			second = match{p.Name, score}
+		}
+	}
+
+	// Require at least 1 match
+	if best.score == 0 {
+		return "unknown", 0
+	}
+
+	// If best is clearly ahead of second, high confidence
+	confidence := float32(best.score) / 3.0
+	if best.score > second.score+1 {
+		confidence = float32(best.score) / 2.0
+	}
+	if confidence > 1.0 {
+		confidence = 1.0
+	}
+
+	return best.name, confidence
+}
+
+// chineseKeywords maps agent names to Chinese keyword patterns for
+// fallback classification when LLM is unavailable.
+var chineseKeywords = map[string][]string{
+	"copywriter":   {"文案", "推广", "营销", "广告", "宣传", "产品", "描述", "标题", "广告词", "促销"},
+	"email_sorter": {"邮件", "email", "投诉", "退款", "咨询", "客户", "回复", "来信", "收件", "发件"},
+	"xhs_poster":   {"小红书", "种草", "笔记", "xhs", "好物", "测评", "推荐", "安利", "分享"},
+}
+
+// buildKeywords generates search keywords from a plugin's metadata and Chinese keywords
+func (r *Router) buildKeywords(p runtime.PluginInfo) []string {
+	keywords := make([]string, 0)
+	seen := make(map[string]bool)
+
+	add := func(kw string) {
+		lower := strings.ToLower(strings.TrimSpace(kw))
+		if lower != "" && !seen[lower] {
+			seen[lower] = true
+			keywords = append(keywords, lower)
+		}
+	}
+
+	// From name
+	add(p.Name)
+	// From summary - add as single string for Chinese
+	add(p.Summary)
+	// From tags
+	for _, tag := range p.Tags {
+		add(tag)
+	}
+	// From Chinese keyword map
+	if ckw, ok := chineseKeywords[p.Name]; ok {
+		for _, kw := range ckw {
+			add(kw)
+		}
+	}
+
+	return keywords
+}
+
 func (r *Router) buildAvailableList() string {
-	plugins := r.loader.List()
+	plugins := r.plugins.List()
 	names := make([]string, len(plugins))
 	for i, p := range plugins {
 		names[i] = p.Name

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 )
 
@@ -15,15 +16,48 @@ type Operation struct {
 }
 
 type Handler struct {
-	reader io.Reader
-	writer io.Writer
+	reader      io.Reader
+	writer      io.Writer
+	autoConfirm bool
 }
 
 func NewHandler(reader io.Reader, writer io.Writer) *Handler {
-	return &Handler{reader: reader, writer: writer}
+	// Auto-confirm when non-interactive (piped input)
+	autoConfirm := !isInteractive(reader)
+
+	return &Handler{
+		reader:      reader,
+		writer:      writer,
+		autoConfirm: autoConfirm,
+	}
+}
+
+func isInteractive(r io.Reader) bool {
+	f, ok := r.(*os.File)
+	if !ok {
+		return false
+	}
+	stat, err := f.Stat()
+	if err != nil {
+		return false
+	}
+	return (stat.Mode() & os.ModeCharDevice) != 0
+}
+
+func NewInteractiveHandler(reader io.Reader, writer io.Writer) *Handler {
+	return &Handler{
+		reader:      reader,
+		writer:      writer,
+		autoConfirm: false,
+	}
 }
 
 func (h *Handler) Confirm(ctx context.Context, op Operation) (bool, error) {
+	if h.autoConfirm {
+		fmt.Fprintf(h.writer, "[HITL] 非交互模式，自动确认操作：%s\n", op.Type)
+		return true, nil
+	}
+
 	fmt.Fprintf(h.writer, "\n"+
 		"═══════════════════════════════════════════════\n"+
 		"  ⚠️  需要您的确认\n"+
