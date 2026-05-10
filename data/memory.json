@@ -1,0 +1,1088 @@
+[
+  {
+    "id": "2cec9596-9ac9-4d79-88ea-dc3e88306f79",
+    "created_at": "2026-05-10T11:48:43.398479+08:00",
+    "task_type": "copywriter",
+    "user_input": "帮我写一个关于杭州可人酒店的推广文案",
+    "agent_output": "map[long_copy:在寻找一款真正懂你的产品吗？帮我写一个关于杭州可人酒店的推广文案\n\n我们用心打磨每一个细节，只为给你最好的体验。从选材到工艺，每一步都精益求精。\n\n现在就行动起来，开启品质生活新篇章。 short_copy:「帮我写一个关于杭」懂你所需，品质之选 social_copy:被问爆了！帮我写一个关于杭州可 真的绝绝子✨ style:科技简约]",
+    "key_decisions": [
+      "long_copy",
+      "social_copy",
+      "style",
+      "short_copy"
+    ],
+    "embedding": [
+      0.105882354,
+      0.28235295,
+      0.06666667,
+      0.21568628,
+      0.9843137,
+      0.6431373,
+      0.6039216,
+      0.8862745,
+      0.1882353,
+      0.3372549,
+      0,
+      0.07450981,
+      0.59607846,
+      0.003921569,
+      0.34509805,
+      0.9764706
+    ],
+    "metadata": {
+      "model": "gemma-4-26B-A4B-it",
+      "tokens_in": "100",
+      "tokens_out": "150"
+    }
+  },
+  {
+    "id": "90e645b5-8384-4777-8b78-10b557439158",
+    "created_at": "2026-05-10T11:48:43.400138+08:00",
+    "task_type": "email_sorter",
+    "user_input": "处理这封邮件：产品坏了我要退款",
+    "agent_output": "map[category:投诉 reason:基于关键词分析归类为投诉 reply_suggestion:您好，已收到您的来信。关于「处理这封邮件：产品坏了我要退款」的问题，我们会尽快处理。 urgency:高]",
+    "key_decisions": [
+      "reason",
+      "reply_suggestion",
+      "urgency",
+      "category"
+    ],
+    "embedding": [
+      0.11764706,
+      0.10980392,
+      0.60784316,
+      0.53333336,
+      0.85882354,
+      0.5137255,
+      0.5058824,
+      0.7529412,
+      0.46666667,
+      0.9137255,
+      0.3529412,
+      0.9019608,
+      0.7294118,
+      0.9647059,
+      0,
+      0.45882353
+    ],
+    "metadata": {
+      "model": "gemma-4-26B-A4B-it",
+      "tokens_in": "80",
+      "tokens_out": "120"
+    }
+  },
+  {
+    "id": "e94cc9be-80ec-4feb-9d7e-b44b35ebbb6d",
+    "created_at": "2026-05-10T11:48:43.401571+08:00",
+    "task_type": "xhs_poster",
+    "user_input": "帮我写一篇小红书笔记",
+    "agent_output": "map[body:姐妹们！今天一定要给你们安利这个帮我写一篇小红书笔记\n\n真的被惊艳到了😍 品质超级棒，细节处理也很到位。\n\n推荐指数：⭐⭐⭐⭐⭐\n\n我已经回购好几次了，每次都被朋友夸！ hashtags:[#好物推荐 #种草 #测评 #生活好物 #值得入手] image_suggestions:[产品整体展示图 细节特写图 使用场景图] style:好物推荐 title:被问爆了！帮我写一篇小红书笔记 真的绝了✨]",
+    "key_decisions": [
+      "style",
+      "title",
+      "body",
+      "hashtags",
+      "image_suggestions"
+    ],
+    "embedding": [
+      0.21960784,
+      0.5411765,
+      0.7529412,
+      0.043137256,
+      0.7882353,
+      0.24705882,
+      0.6392157,
+      0.9607843,
+      0.3019608,
+      0.03529412,
+      0.18431373,
+      0.7372549,
+      0.16862746,
+      0.53333336,
+      0.4862745,
+      0.90588236
+    ],
+    "metadata": {
+      "model": "gemma-4-26B-A4B-it",
+      "tokens_in": "90",
+      "tokens_out": "200"
+    }
+  },
+  {
+    "id": "bf755df9-7ead-4d46-bc07-d89f85ce1b11",
+    "created_at": "2026-05-10T11:50:51.72353+08:00",
+    "task_type": "copywriter",
+    "user_input": "帮我写一个关于杭州可人酒店的推广文案",
+    "agent_output": "map[long_copy:在寻找一款真正懂你的产品吗？帮我写一个关于杭州可人酒店的推广文案\n\n我们用心打磨每一个细节，只为给你最好的体验。从选材到工艺，每一步都精益求精。\n\n现在就行动起来，开启品质生活新篇章。 short_copy:「帮我写一个关于杭」懂你所需，品质之选 social_copy:被问爆了！帮我写一个关于杭州可 真的绝绝子✨ style:科技简约]",
+    "key_decisions": [
+      "long_copy",
+      "social_copy",
+      "style",
+      "short_copy"
+    ],
+    "embedding": [
+      0.105882354,
+      0.28235295,
+      0.06666667,
+      0.21568628,
+      0.9843137,
+      0.6431373,
+      0.6039216,
+      0.8862745,
+      0.1882353,
+      0.3372549,
+      0,
+      0.07450981,
+      0.59607846,
+      0.003921569,
+      0.34509805,
+      0.9764706
+    ],
+    "metadata": {
+      "model": "gemma-4-26B-A4B-it",
+      "tokens_in": "100",
+      "tokens_out": "150"
+    }
+  },
+  {
+    "id": "44326b4c-3308-457e-9fe5-cca72e91a854",
+    "created_at": "2026-05-10T11:50:51.727126+08:00",
+    "task_type": "email_sorter",
+    "user_input": "处理这封邮件：产品坏了我要退款",
+    "agent_output": "map[category:投诉 reason:基于关键词分析归类为投诉 reply_suggestion:您好，已收到您的来信。关于「处理这封邮件：产品坏了我要退款」的问题，我们会尽快处理。 urgency:高]",
+    "key_decisions": [
+      "category",
+      "reason",
+      "reply_suggestion",
+      "urgency"
+    ],
+    "embedding": [
+      0.11764706,
+      0.10980392,
+      0.60784316,
+      0.53333336,
+      0.85882354,
+      0.5137255,
+      0.5058824,
+      0.7529412,
+      0.46666667,
+      0.9137255,
+      0.3529412,
+      0.9019608,
+      0.7294118,
+      0.9647059,
+      0,
+      0.45882353
+    ],
+    "metadata": {
+      "model": "gemma-4-26B-A4B-it",
+      "tokens_in": "80",
+      "tokens_out": "120"
+    }
+  },
+  {
+    "id": "87ee9573-d6ca-4c4f-bdcc-423b79a3215d",
+    "created_at": "2026-05-10T11:50:51.72976+08:00",
+    "task_type": "xhs_poster",
+    "user_input": "帮我写一篇小红书笔记",
+    "agent_output": "map[body:姐妹们！今天一定要给你们安利这个帮我写一篇小红书笔记\n\n真的被惊艳到了😍 品质超级棒，细节处理也很到位。\n\n推荐指数：⭐⭐⭐⭐⭐\n\n我已经回购好几次了，每次都被朋友夸！ hashtags:[#好物推荐 #种草 #测评 #生活好物 #值得入手] image_suggestions:[产品整体展示图 细节特写图 使用场景图] style:好物推荐 title:被问爆了！帮我写一篇小红书笔记 真的绝了✨]",
+    "key_decisions": [
+      "title",
+      "body",
+      "hashtags",
+      "image_suggestions",
+      "style"
+    ],
+    "embedding": [
+      0.21960784,
+      0.5411765,
+      0.7529412,
+      0.043137256,
+      0.7882353,
+      0.24705882,
+      0.6392157,
+      0.9607843,
+      0.3019608,
+      0.03529412,
+      0.18431373,
+      0.7372549,
+      0.16862746,
+      0.53333336,
+      0.4862745,
+      0.90588236
+    ],
+    "metadata": {
+      "model": "gemma-4-26B-A4B-it",
+      "tokens_in": "90",
+      "tokens_out": "200"
+    }
+  },
+  {
+    "id": "eb43052a-c8f4-4ce8-9c4b-b6ec67da11e2",
+    "created_at": "2026-05-10T11:52:47.62544+08:00",
+    "task_type": "copywriter",
+    "user_input": "帮我写一个关于杭州可人酒店的推广文案",
+    "agent_output": "map[long_copy:在寻找一款真正懂你的产品吗？帮我写一个关于杭州可人酒店的推广文案\n\n我们用心打磨每一个细节，只为给你最好的体验。从选材到工艺，每一步都精益求精。\n\n现在就行动起来，开启品质生活新篇章。 short_copy:「帮我写一个关于杭」懂你所需，品质之选 social_copy:被问爆了！帮我写一个关于杭州可 真的绝绝子✨ style:科技简约]",
+    "key_decisions": [
+      "short_copy",
+      "long_copy",
+      "social_copy",
+      "style"
+    ],
+    "embedding": [
+      0.105882354,
+      0.28235295,
+      0.06666667,
+      0.21568628,
+      0.9843137,
+      0.6431373,
+      0.6039216,
+      0.8862745,
+      0.1882353,
+      0.3372549,
+      0,
+      0.07450981,
+      0.59607846,
+      0.003921569,
+      0.34509805,
+      0.9764706
+    ],
+    "metadata": {
+      "model": "gemma-4-26B-A4B-it",
+      "tokens_in": "100",
+      "tokens_out": "150"
+    }
+  },
+  {
+    "id": "391a02fb-a863-4ad9-ac2d-b463a6ec33ca",
+    "created_at": "2026-05-10T11:56:36.921698+08:00",
+    "task_type": "copywriter",
+    "user_input": "帮我写一个关于杭州可人酒店的推广文案",
+    "agent_output": "map[long_copy:这是一款革命性的智能水杯...（LLM 生成内容，此处为 MVP stub） short_copy:智能水杯，懂你温度 social_copy:有了它，喝水变成一种享受 💧 style:科技简约]",
+    "key_decisions": [
+      "short_copy",
+      "long_copy",
+      "social_copy",
+      "style"
+    ],
+    "embedding": [
+      0.105882354,
+      0.28235295,
+      0.06666667,
+      0.21568628,
+      0.9843137,
+      0.6431373,
+      0.6039216,
+      0.8862745,
+      0.1882353,
+      0.3372549,
+      0,
+      0.07450981,
+      0.59607846,
+      0.003921569,
+      0.34509805,
+      0.9764706
+    ],
+    "metadata": {
+      "model": "gemma-4-26B-A4B-it",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "ac5912f7-af3b-4d73-84b3-a1b67f935e8a",
+    "created_at": "2026-05-10T11:56:36.924981+08:00",
+    "task_type": "email_sorter",
+    "user_input": "处理这封投诉信",
+    "agent_output": "map[category:投诉 reason:检测到投诉/退款关键词 reply_suggestion:您好，非常抱歉给您带来不便。我们已收到您的反馈，正在加急处理。请提供更多信息以便我们尽快解决您的问题。 urgency:高]",
+    "key_decisions": [
+      "category",
+      "reason",
+      "reply_suggestion",
+      "urgency"
+    ],
+    "embedding": [
+      0.039215688,
+      0.36078432,
+      0.85490197,
+      0.9490196,
+      0.039215688,
+      0.9764706,
+      1,
+      0.14117648,
+      0.08235294,
+      0.45490196,
+      0.23137255,
+      0.7176471,
+      0.8901961,
+      0.7921569,
+      0.3529412,
+      0.8352941
+    ],
+    "metadata": {
+      "model": "gemma-4-26B-A4B-it",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "25fbe68f-a5a0-4e63-a130-b9b41691d807",
+    "created_at": "2026-05-10T11:56:36.932883+08:00",
+    "task_type": "xhs_poster",
+    "user_input": "写一篇种草笔记",
+    "agent_output": "map[body:亲测好用！分享一下最近入手的这款产品...（LLM 生成内容，此处为 MVP stub）\n\n真的被惊艳到了！😍 从包装到使用体验都非常棒。\n\n推荐指数：⭐⭐⭐⭐⭐ hashtags:[#好物推荐 #种草 #测评 #生活好物 #值得入手] image_suggestions:[产品全家福展示图 使用效果对比图 产品细节特写] style:好物推荐 title:这款好物真的绝了✨]",
+    "key_decisions": [
+      "body",
+      "hashtags",
+      "image_suggestions",
+      "style",
+      "title"
+    ],
+    "embedding": [
+      0.92941177,
+      0.78431374,
+      0.52156866,
+      0.03529412,
+      0.36078432,
+      0.627451,
+      0.29411766,
+      0.25882354,
+      0.15294118,
+      0.41960785,
+      0.29411766,
+      0.6901961,
+      0.23137255,
+      0.28627452,
+      0.2627451,
+      0.015686275
+    ],
+    "metadata": {
+      "model": "gemma-4-26B-A4B-it",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "21fcbe10-e8db-4024-8026-efc1aac67596",
+    "created_at": "2026-05-10T11:56:36.935183+08:00",
+    "task_type": "copywriter",
+    "user_input": "@copywriter",
+    "agent_output": "map[long_copy:这是一款革命性的智能水杯...（LLM 生成内容，此处为 MVP stub） short_copy:智能水杯，懂你温度 social_copy:有了它，喝水变成一种享受 💧 style:科技简约]",
+    "key_decisions": [
+      "short_copy",
+      "long_copy",
+      "social_copy",
+      "style"
+    ],
+    "embedding": [
+      0.93333334,
+      0.99215686,
+      0.64705884,
+      0.24313726,
+      0.8235294,
+      0.2509804,
+      0.20784314,
+      0.9607843,
+      0.28627452,
+      0.03137255,
+      0.47058824,
+      0.43529412,
+      0.972549,
+      0.69411767,
+      0.3764706,
+      0.9490196
+    ],
+    "metadata": {
+      "model": "gemma-4-26B-A4B-it",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "c9eca7be-b085-4df0-9e2c-48a49b206d5f",
+    "created_at": "2026-05-10T12:02:06.052419+08:00",
+    "task_type": "copywriter",
+    "user_input": "帮我写一个关于杭州可人酒店的推广文案",
+    "agent_output": "map[long_copy:这是一款革命性的智能水杯...（LLM 生成内容，此处为 MVP stub） short_copy:智能水杯，懂你温度 social_copy:有了它，喝水变成一种享受 💧 style:科技简约]",
+    "key_decisions": [
+      "short_copy",
+      "long_copy",
+      "social_copy",
+      "style"
+    ],
+    "embedding": [
+      0.105882354,
+      0.28235295,
+      0.06666667,
+      0.21568628,
+      0.9843137,
+      0.6431373,
+      0.6039216,
+      0.8862745,
+      0.1882353,
+      0.3372549,
+      0,
+      0.07450981,
+      0.59607846,
+      0.003921569,
+      0.34509805,
+      0.9764706
+    ],
+    "metadata": {
+      "model": "gemma-4-26B-A4B-it",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "0e635862-ef13-4bf2-b61a-da3e6d6564b3",
+    "created_at": "2026-05-10T12:02:06.073778+08:00",
+    "task_type": "email_sorter",
+    "user_input": "处理这封投诉信",
+    "agent_output": "map[category:投诉 reason:检测到投诉/退款关键词 reply_suggestion:您好，非常抱歉给您带来不便。我们已收到您的反馈，正在加急处理。请提供更多信息以便我们尽快解决您的问题。 urgency:高]",
+    "key_decisions": [
+      "reply_suggestion",
+      "urgency",
+      "category",
+      "reason"
+    ],
+    "embedding": [
+      0.039215688,
+      0.36078432,
+      0.85490197,
+      0.9490196,
+      0.039215688,
+      0.9764706,
+      1,
+      0.14117648,
+      0.08235294,
+      0.45490196,
+      0.23137255,
+      0.7176471,
+      0.8901961,
+      0.7921569,
+      0.3529412,
+      0.8352941
+    ],
+    "metadata": {
+      "model": "gemma-4-26B-A4B-it",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "2dd4508a-b47b-4909-a7f8-fa9759ef544d",
+    "created_at": "2026-05-10T12:02:06.09938+08:00",
+    "task_type": "xhs_poster",
+    "user_input": "写一篇种草笔记",
+    "agent_output": "map[body:亲测好用！分享一下最近入手的这款产品...（LLM 生成内容，此处为 MVP stub）\n\n真的被惊艳到了！😍 从包装到使用体验都非常棒。\n\n推荐指数：⭐⭐⭐⭐⭐ hashtags:[#好物推荐 #种草 #测评 #生活好物 #值得入手] image_suggestions:[产品全家福展示图 使用效果对比图 产品细节特写] style:好物推荐 title:这款好物真的绝了✨]",
+    "key_decisions": [
+      "image_suggestions",
+      "style",
+      "title",
+      "body",
+      "hashtags"
+    ],
+    "embedding": [
+      0.92941177,
+      0.78431374,
+      0.52156866,
+      0.03529412,
+      0.36078432,
+      0.627451,
+      0.29411766,
+      0.25882354,
+      0.15294118,
+      0.41960785,
+      0.29411766,
+      0.6901961,
+      0.23137255,
+      0.28627452,
+      0.2627451,
+      0.015686275
+    ],
+    "metadata": {
+      "model": "gemma-4-26B-A4B-it",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "2d6b56e3-b472-4fcb-afd2-3be217df208d",
+    "created_at": "2026-05-10T12:02:06.159316+08:00",
+    "task_type": "copywriter",
+    "user_input": "产品推广",
+    "agent_output": "map[long_copy:这是一款革命性的智能水杯...（LLM 生成内容，此处为 MVP stub） short_copy:智能水杯，懂你温度 social_copy:有了它，喝水变成一种享受 💧 style:科技简约]",
+    "key_decisions": [
+      "short_copy",
+      "long_copy",
+      "social_copy",
+      "style"
+    ],
+    "embedding": [
+      0.21960784,
+      0.8862745,
+      0.61960787,
+      0.9372549,
+      0.13725491,
+      0.30980393,
+      0.21568628,
+      0.95686275,
+      0.7647059,
+      0.0627451,
+      0.4509804,
+      0.007843138,
+      0.20784314,
+      0.6862745,
+      0.9647059,
+      0.42745098
+    ],
+    "metadata": {
+      "model": "gemma-4-26B-A4B-it",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "36ec65e5-124b-4806-b7bd-4fbff6c437af",
+    "created_at": "2026-05-10T12:16:54.023915+08:00",
+    "task_type": "copywriter",
+    "user_input": "杭州可人酒店",
+    "agent_output": "map[long_copy:在寻找一款真正懂你的产品吗？杭州可人酒店\n\n我们用心打磨每一个细节，只为给你最好的体验。品质之选，值得信赖。 short_copy:「杭州可人酒店」懂你所需，品质之选 social_copy:被问爆了！杭州可人酒店 真的绝绝子✨ style:科技简约]",
+    "key_decisions": [
+      "short_copy",
+      "long_copy",
+      "social_copy",
+      "style"
+    ],
+    "embedding": [
+      0.7019608,
+      0.39607844,
+      0.25882354,
+      0.33333334,
+      0.8901961,
+      0.6392157,
+      0.67058825,
+      0.99607843,
+      0.46666667,
+      0.6392157,
+      0.15294118,
+      0.9137255,
+      0.60784316,
+      0.6666667,
+      0.7921569,
+      0.08627451
+    ],
+    "metadata": {
+      "model": "gemini-2.0-flash",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "59331660-69f5-456c-ba4a-bc26683b0203",
+    "created_at": "2026-05-10T12:29:03.78197+08:00",
+    "task_type": "copywriter",
+    "user_input": "杭州可人酒店",
+    "agent_output": "map[long_copy:这是一款革命性的智能水杯...（LLM 生成内容，此处为 MVP stub） short_copy:智能水杯，懂你温度 social_copy:有了它，喝水变成一种享受 💧 style:科技简约]",
+    "key_decisions": [
+      "social_copy",
+      "style",
+      "short_copy",
+      "long_copy"
+    ],
+    "embedding": [
+      0.7019608,
+      0.39607844,
+      0.25882354,
+      0.33333334,
+      0.8901961,
+      0.6392157,
+      0.67058825,
+      0.99607843,
+      0.46666667,
+      0.6392157,
+      0.15294118,
+      0.9137255,
+      0.60784316,
+      0.6666667,
+      0.7921569,
+      0.08627451
+    ],
+    "metadata": {
+      "model": "deepseek-v4-flash",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "e01ce2e1-d3ea-4bf3-b851-373af643773c",
+    "created_at": "2026-05-10T12:29:03.790204+08:00",
+    "task_type": "email_sorter",
+    "user_input": "收到投诉要求退款",
+    "agent_output": "map[category:投诉 reason:检测到投诉/退款关键词 reply_suggestion:您好，非常抱歉给您带来不便。我们已收到您的反馈，正在加急处理。请提供更多信息以便我们尽快解决您的问题。 urgency:高]",
+    "key_decisions": [
+      "category",
+      "reason",
+      "reply_suggestion",
+      "urgency"
+    ],
+    "embedding": [
+      0.8117647,
+      0.08627451,
+      0.22745098,
+      0.42352942,
+      0.78039217,
+      0.44705883,
+      1,
+      0.45490196,
+      0.5019608,
+      0.7529412,
+      0.5647059,
+      0.3529412,
+      0.3529412,
+      0.10980392,
+      0.07058824,
+      0.9098039
+    ],
+    "metadata": {
+      "model": "deepseek-v4-flash",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "211ec00b-d195-4c7d-89cd-723d42f9151b",
+    "created_at": "2026-05-10T12:29:03.794355+08:00",
+    "task_type": "xhs_poster",
+    "user_input": "推荐一个智能水杯",
+    "agent_output": "map[body:亲测好用！分享一下最近入手的这款产品...（LLM 生成内容，此处为 MVP stub）\n\n真的被惊艳到了！😍 从包装到使用体验都非常棒。\n\n推荐指数：⭐⭐⭐⭐⭐ hashtags:[#好物推荐 #种草 #测评 #生活好物 #值得入手] image_suggestions:[产品全家福展示图 使用效果对比图 产品细节特写] style:好物推荐 title:这款好物真的绝了✨]",
+    "key_decisions": [
+      "title",
+      "body",
+      "hashtags",
+      "image_suggestions",
+      "style"
+    ],
+    "embedding": [
+      0.9607843,
+      0.84313726,
+      0.9764706,
+      0.81960785,
+      0.8627451,
+      0.64705884,
+      0.44313726,
+      0.1882353,
+      0.95686275,
+      0.81960785,
+      0.5254902,
+      0.5764706,
+      0.8352941,
+      0.6431373,
+      0.011764706,
+      0.5254902
+    ],
+    "metadata": {
+      "model": "deepseek-v4-flash",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "a0e1e979-b4c6-4981-8733-28a4f79855b8",
+    "created_at": "2026-05-10T12:30:12.362811+08:00",
+    "task_type": "copywriter",
+    "user_input": "杭州可人酒店",
+    "agent_output": "map[long_copy:这是一款革命性的智能水杯...（LLM 生成内容，此处为 MVP stub） short_copy:智能水杯，懂你温度 social_copy:有了它，喝水变成一种享受 💧 style:科技简约]",
+    "key_decisions": [
+      "short_copy",
+      "long_copy",
+      "social_copy",
+      "style"
+    ],
+    "embedding": [
+      0.7019608,
+      0.39607844,
+      0.25882354,
+      0.33333334,
+      0.8901961,
+      0.6392157,
+      0.67058825,
+      0.99607843,
+      0.46666667,
+      0.6392157,
+      0.15294118,
+      0.9137255,
+      0.60784316,
+      0.6666667,
+      0.7921569,
+      0.08627451
+    ],
+    "metadata": {
+      "model": "deepseek-v4-flash",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "6e3554a9-1905-48b5-a7a6-e6564167c7e2",
+    "created_at": "2026-05-10T12:30:12.365229+08:00",
+    "task_type": "email_sorter",
+    "user_input": "收到投诉要求退款",
+    "agent_output": "map[category:投诉 reason:检测到投诉/退款关键词 reply_suggestion:您好，非常抱歉给您带来不便。我们已收到您的反馈，正在加急处理。请提供更多信息以便我们尽快解决您的问题。 urgency:高]",
+    "key_decisions": [
+      "category",
+      "reason",
+      "reply_suggestion",
+      "urgency"
+    ],
+    "embedding": [
+      0.8117647,
+      0.08627451,
+      0.22745098,
+      0.42352942,
+      0.78039217,
+      0.44705883,
+      1,
+      0.45490196,
+      0.5019608,
+      0.7529412,
+      0.5647059,
+      0.3529412,
+      0.3529412,
+      0.10980392,
+      0.07058824,
+      0.9098039
+    ],
+    "metadata": {
+      "model": "deepseek-v4-flash",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "da5164ad-bf87-4589-a543-c37fa2f73791",
+    "created_at": "2026-05-10T12:30:12.366254+08:00",
+    "task_type": "xhs_poster",
+    "user_input": "推荐一个智能水杯",
+    "agent_output": "map[body:亲测好用！分享一下最近入手的这款产品...（LLM 生成内容，此处为 MVP stub）\n\n真的被惊艳到了！😍 从包装到使用体验都非常棒。\n\n推荐指数：⭐⭐⭐⭐⭐ hashtags:[#好物推荐 #种草 #测评 #生活好物 #值得入手] image_suggestions:[产品全家福展示图 使用效果对比图 产品细节特写] style:好物推荐 title:这款好物真的绝了✨]",
+    "key_decisions": [
+      "title",
+      "body",
+      "hashtags",
+      "image_suggestions",
+      "style"
+    ],
+    "embedding": [
+      0.9607843,
+      0.84313726,
+      0.9764706,
+      0.81960785,
+      0.8627451,
+      0.64705884,
+      0.44313726,
+      0.1882353,
+      0.95686275,
+      0.81960785,
+      0.5254902,
+      0.5764706,
+      0.8352941,
+      0.6431373,
+      0.011764706,
+      0.5254902
+    ],
+    "metadata": {
+      "model": "deepseek-v4-flash",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "f4d4f588-b1fe-4e53-b07b-dd3e12d2d7aa",
+    "created_at": "2026-05-10T12:33:26.643229+08:00",
+    "task_type": "copywriter",
+    "user_input": "杭州可人酒店",
+    "agent_output": "map[long_copy:【杭州可人酒店 深度测评】\n\n最近被问爆的杭州可人酒店，今天来给大家详细说说。\n\n首先说外观：设计真的很有质感，拿在手里就知道了。\n\n再说功能：该有的全都有，细节处理很到位。\n\n最后说性价比：这个价位段里，绝对是值得入手的选择。\n\n总之，如果你正在考虑杭州可人酒店，这篇文章应该能帮你做决定。 short_copy:终于等到杭州可人酒店了！🔥 杭州可人酒店全攻略 social_copy:终于入手了杭州可人酒店！之前观望了好久，用了一周只想说——真香！😍 #好物分享 #值得入手 style:温暖亲和]",
+    "key_decisions": [
+      "style",
+      "short_copy",
+      "long_copy",
+      "social_copy"
+    ],
+    "embedding": [
+      0.7019608,
+      0.39607844,
+      0.25882354,
+      0.33333334,
+      0.8901961,
+      0.6392157,
+      0.67058825,
+      0.99607843,
+      0.46666667,
+      0.6392157,
+      0.15294118,
+      0.9137255,
+      0.60784316,
+      0.6666667,
+      0.7921569,
+      0.08627451
+    ],
+    "metadata": {
+      "model": "dev-mode",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "6afbb3db-6a80-4e86-996d-78acbc940d47",
+    "created_at": "2026-05-10T12:49:07.190566+08:00",
+    "task_type": "copywriter",
+    "user_input": "杭州可人酒店",
+    "agent_output": "map[long_copy:【杭州可人酒店 深度测评】\n\n最近被问爆的杭州可人酒店，今天来给大家详细说说。\n\n首先说外观：设计真的很有质感，拿在手里就知道了。\n\n再说功能：该有的全都有，细节处理很到位。\n\n最后说性价比：这个价位段里，绝对是值得入手的选择。\n\n总之，如果你正在考虑杭州可人酒店，这篇文章应该能帮你做决定。 short_copy:终于等到杭州可人酒店了！🔥 杭州可人酒店全攻略 social_copy:终于入手了杭州可人酒店！之前观望了好久，用了一周只想说——真香！😍 #好物分享 #值得入手 style:温暖亲和]",
+    "key_decisions": [
+      "short_copy",
+      "long_copy",
+      "social_copy",
+      "style"
+    ],
+    "embedding": [
+      0.7019608,
+      0.39607844,
+      0.25882354,
+      0.33333334,
+      0.8901961,
+      0.6392157,
+      0.67058825,
+      0.99607843,
+      0.46666667,
+      0.6392157,
+      0.15294118,
+      0.9137255,
+      0.60784316,
+      0.6666667,
+      0.7921569,
+      0.08627451
+    ],
+    "metadata": {
+      "model": "dev-mode",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "29ebc573-aa61-4ac4-be71-78482382c8e0",
+    "created_at": "2026-05-10T12:49:18.889109+08:00",
+    "task_type": "copywriter",
+    "user_input": "杭州可人酒店",
+    "agent_output": "map[long_copy:【杭州可人酒店 深度测评】\n\n最近被问爆的杭州可人酒店，今天来给大家详细说说。\n\n首先说外观：设计真的很有质感，拿在手里就知道了。\n\n再说功能：该有的全都有，细节处理很到位。\n\n最后说性价比：这个价位段里，绝对是值得入手的选择。\n\n总之，如果你正在考虑杭州可人酒店，这篇文章应该能帮你做决定。 short_copy:终于等到杭州可人酒店了！🔥 杭州可人酒店全攻略 social_copy:终于入手了杭州可人酒店！之前观望了好久，用了一周只想说——真香！😍 #好物分享 #值得入手 style:温暖亲和]",
+    "key_decisions": [
+      "social_copy",
+      "style",
+      "short_copy",
+      "long_copy"
+    ],
+    "embedding": [
+      0.7019608,
+      0.39607844,
+      0.25882354,
+      0.33333334,
+      0.8901961,
+      0.6392157,
+      0.67058825,
+      0.99607843,
+      0.46666667,
+      0.6392157,
+      0.15294118,
+      0.9137255,
+      0.60784316,
+      0.6666667,
+      0.7921569,
+      0.08627451
+    ],
+    "metadata": {
+      "model": "dev-mode",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "fd3a7621-7467-4f76-be9f-a2ea17847de1",
+    "created_at": "2026-05-10T12:49:59.309784+08:00",
+    "task_type": "copywriter",
+    "user_input": "杭州可人酒店",
+    "agent_output": "map[long_copy:【杭州可人酒店 深度测评】\n\n最近被问爆的杭州可人酒店，今天来给大家详细说说。\n\n首先说外观：设计真的很有质感，拿在手里就知道了。\n\n再说功能：该有的全都有，细节处理很到位。\n\n最后说性价比：这个价位段里，绝对是值得入手的选择。\n\n总之，如果你正在考虑杭州可人酒店，这篇文章应该能帮你做决定。 short_copy:终于等到杭州可人酒店了！🔥 杭州可人酒店全攻略 social_copy:终于入手了杭州可人酒店！之前观望了好久，用了一周只想说——真香！😍 #好物分享 #值得入手 style:温暖亲和]",
+    "key_decisions": [
+      "short_copy",
+      "long_copy",
+      "social_copy",
+      "style"
+    ],
+    "embedding": [
+      0.7019608,
+      0.39607844,
+      0.25882354,
+      0.33333334,
+      0.8901961,
+      0.6392157,
+      0.67058825,
+      0.99607843,
+      0.46666667,
+      0.6392157,
+      0.15294118,
+      0.9137255,
+      0.60784316,
+      0.6666667,
+      0.7921569,
+      0.08627451
+    ],
+    "metadata": {
+      "model": "dev-mode",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "1f94ebba-0878-4800-a284-aeb6bf4f479a",
+    "created_at": "2026-05-10T18:46:28.473644+08:00",
+    "task_type": "copywriter",
+    "user_input": "杭州可人酒店",
+    "agent_output": "map[long_copy:这是一款革命性的智能水杯...（LLM 生成内容，此处为 MVP stub） short_copy:智能水杯，懂你温度 social_copy:有了它，喝水变成一种享受 💧 style:科技简约]",
+    "key_decisions": [
+      "short_copy",
+      "long_copy",
+      "social_copy",
+      "style"
+    ],
+    "embedding": [
+      0.7019608,
+      0.39607844,
+      0.25882354,
+      0.33333334,
+      0.8901961,
+      0.6392157,
+      0.67058825,
+      0.99607843,
+      0.46666667,
+      0.6392157,
+      0.15294118,
+      0.9137255,
+      0.60784316,
+      0.6666667,
+      0.7921569,
+      0.08627451
+    ],
+    "metadata": {
+      "model": "deepseek-chat",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "f86bf2c6-c64f-40e6-b7b7-8b5ffa0817c3",
+    "created_at": "2026-05-10T18:47:01.202383+08:00",
+    "task_type": "copywriter",
+    "user_input": "杭州可人酒店",
+    "agent_output": "map[long_copy:这是一款革命性的智能水杯...（LLM 生成内容，此处为 MVP stub） short_copy:智能水杯，懂你温度 social_copy:有了它，喝水变成一种享受 💧 style:科技简约]",
+    "key_decisions": [
+      "style",
+      "short_copy",
+      "long_copy",
+      "social_copy"
+    ],
+    "embedding": [
+      0.7019608,
+      0.39607844,
+      0.25882354,
+      0.33333334,
+      0.8901961,
+      0.6392157,
+      0.67058825,
+      0.99607843,
+      0.46666667,
+      0.6392157,
+      0.15294118,
+      0.9137255,
+      0.60784316,
+      0.6666667,
+      0.7921569,
+      0.08627451
+    ],
+    "metadata": {
+      "model": "deepseek-chat",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "eef4ccaa-92b7-40bc-8e76-e445d8724b1a",
+    "created_at": "2026-05-10T18:49:43.777486+08:00",
+    "task_type": "copywriter",
+    "user_input": "杭州可人酒店",
+    "agent_output": "map[long_copy:这是一款革命性的智能水杯...（LLM 生成内容，此处为 MVP stub） short_copy:智能水杯，懂你温度 social_copy:有了它，喝水变成一种享受 💧 style:科技简约]",
+    "key_decisions": [
+      "long_copy",
+      "social_copy",
+      "style",
+      "short_copy"
+    ],
+    "embedding": [
+      0.7019608,
+      0.39607844,
+      0.25882354,
+      0.33333334,
+      0.8901961,
+      0.6392157,
+      0.67058825,
+      0.99607843,
+      0.46666667,
+      0.6392157,
+      0.15294118,
+      0.9137255,
+      0.60784316,
+      0.6666667,
+      0.7921569,
+      0.08627451
+    ],
+    "metadata": {
+      "model": "deepseek-chat",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  },
+  {
+    "id": "ba694cae-c0e7-4a5a-8cb7-7a058ecf216a",
+    "created_at": "2026-05-10T18:49:54.244033+08:00",
+    "task_type": "copywriter",
+    "user_input": "杭州可人酒店",
+    "agent_output": "map[long_copy:这是一款革命性的智能水杯...（LLM 生成内容，此处为 MVP stub） short_copy:智能水杯，懂你温度 social_copy:有了它，喝水变成一种享受 💧 style:科技简约]",
+    "key_decisions": [
+      "short_copy",
+      "long_copy",
+      "social_copy",
+      "style"
+    ],
+    "embedding": [
+      0.7019608,
+      0.39607844,
+      0.25882354,
+      0.33333334,
+      0.8901961,
+      0.6392157,
+      0.67058825,
+      0.99607843,
+      0.46666667,
+      0.6392157,
+      0.15294118,
+      0.9137255,
+      0.60784316,
+      0.6666667,
+      0.7921569,
+      0.08627451
+    ],
+    "metadata": {
+      "model": "deepseek-chat",
+      "tokens_in": "0",
+      "tokens_out": "0"
+    }
+  }
+]

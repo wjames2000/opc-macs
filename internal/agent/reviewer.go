@@ -23,6 +23,12 @@ func NewReviewer(model string, client runtime.ModelClient) *Reviewer {
 	}
 }
 
+// UpdateModel 更新审查器的模型配置（用于热重载）
+func (r *Reviewer) UpdateModel(model string, client runtime.ModelClient) {
+	r.model = model
+	r.client = client
+}
+
 func (r *Reviewer) Review(ctx context.Context, output interface{}, checkpoints []string, trace string) (*runtime.ReviewResult, error) {
 	// Try LLM-based review using ModelClient
 	if r.client != nil && r.model != "" {

@@ -46,6 +46,11 @@ func NewRouter(plugins PluginSource, model string, client runtime.ModelClient) *
 	return &Router{plugins: plugins, model: model, client: client}
 }
 
+func (r *Router) UpdateModel(model string, client runtime.ModelClient) {
+	r.model = model
+	r.client = client
+}
+
 func (r *Router) buildL1Context() string {
 	plugins := r.plugins.List()
 	var sb strings.Builder

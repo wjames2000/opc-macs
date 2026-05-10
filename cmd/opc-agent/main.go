@@ -139,6 +139,32 @@ func main() {
 			fmt.Println(session.FormatHistory(50))
 			continue
 		}
+		if input == "reload" {
+			fmt.Println("[重载] 重新加载配置...")
+			newCfg, err := config.Load(*configPath)
+			if err != nil {
+				fmt.Printf("[重载] 配置加载失败：%v\n", err)
+				continue
+			}
+			// 重建模型客户端
+			newClient, err := agent.NewModelClient(newCfg.Model.Provider, newCfg.Model.APIBaseURL, newCfg.Model.APIKey)
+			if err != nil {
+				fmt.Printf("[重载] 模型初始化失败：%v\n", err)
+				continue
+			}
+			modelClient = newClient
+			cfg = newCfg
+
+			// 更新 embedder
+			embedder = memory.NewModelClientEmbedder(modelClient, cfg.Model.Name)
+
+			// 更新 Router 和 Reviewer
+			router.UpdateModel(cfg.Model.Name, modelClient)
+			reviewer = agent.NewReviewer(cfg.Model.Name, modelClient)
+
+			fmt.Printf("[重载] 配置已更新：模型 %s → %s\n", cfg.Model.Provider, cfg.Model.Name)
+			continue
+		}
 
 		if hasHistory {
 			history := session.FormatHistory(5)
@@ -316,6 +342,7 @@ func printHelp() {
 	fmt.Println("  stats               查看系统统计信息")
 	fmt.Println("  new                 开始新会话（清空上下文）")
 	fmt.Println("  history             查看当前会话历史")
+	fmt.Println("  reload              重新加载配置（模型/API 等）")
 	fmt.Println("  help                显示帮助")
 	fmt.Println("  exit                退出")
 }
