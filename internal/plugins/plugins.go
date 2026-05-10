@@ -331,7 +331,7 @@ func devClassify(input string) *runtime.ExecutionResult {
 	case "投诉":
 		reply = fmt.Sprintf("尊敬的客户，\n\n非常抱歉给您带来不便。我们已经收到您的投诉（「%s」），正在加急处理中，预计24小时内会有专人联系您。\n\n感谢您的耐心与理解。", extractProductName(input))
 	case "合作":
-		reply = fmt.Sprintf("您好，\n\n感谢您的合作意向！我们非常期待与您进一步沟通。\n\n请提供以下信息以便我们更好地了解您的需求：\n1. 公司/个人简介\n2. 合作方式设想\n3. 联系方式", extractProductName(input))
+		reply = fmt.Sprintf("您好，\n\n感谢您的合作意向！我们非常期待与您进一步沟通。\n\n关于%s，请提供以下信息以便我们更好地了解您的需求：\n1. 公司/个人简介\n2. 合作方式设想\n3. 联系方式", extractProductName(input))
 	case "咨询":
 		reply = fmt.Sprintf("您好，\n\n感谢您的来信。关于您咨询的问题，我们的回复如下：\n\n「%s」\n\n如有其他疑问，欢迎随时联系我们。", input)
 	case "垃圾":
