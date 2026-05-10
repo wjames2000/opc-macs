@@ -71,20 +71,26 @@ opc-agent/
 │   │   ├── plugin.go              # 实现 AgentPlugin 接口
 │   │   ├── go.mod                  # 独立 go.mod
 │   │   └── SKILL.md               # 文案生成技能定义
-│   └── email_sorter/
+│   ├── email_sorter/
+│   │   ├── plugin.go
+│   │   ├── go.mod
+│   │   └── SKILL.md
+│   └── xhs_poster/                 # 小红书内容生成插件
 │       ├── plugin.go
 │       ├── go.mod
 │       └── SKILL.md
 ├── pkg/
 │   └── contracts/
 │       ├── copywriting.json         # 文案输出契约 JSON Schema
-│       └── email_classification.json # 邮件分类契约 JSON Schema
+│       ├── email_classification.json # 邮件分类契约 JSON Schema
+│       └── xhs_post.json            # 小红书帖子契约 JSON Schema
 ├── docs/                            # 项目文档
 ├── build/                           # 构建产物
 │   ├── opc-agent                   # 主程序二进制
 │   └── plugins/                    # 编译好的 .so 文件
 │       ├── copywriter.so
 │       └── email_sorter.so
+│       └── xhs_poster.so
 ├── go.mod
 ├── go.sum
 └── README.md
