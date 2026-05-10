@@ -53,7 +53,7 @@ func (t *testPlugin) Review(_ context.Context, _ interface{}) (*runtime.ReviewRe
 
 func TestRouterNew(t *testing.T) {
 	loader := newMockLoader()
-	r := NewRouter(loader, "gemini-2.0-flash")
+	r := NewRouter(loader, "gemini-2.0-flash", nil)
 	if r == nil {
 		t.Fatal("NewRouter returned nil")
 	}
@@ -61,7 +61,7 @@ func TestRouterNew(t *testing.T) {
 
 func TestBuildL1Context(t *testing.T) {
 	loader := newMockLoader()
-	r := NewRouter(loader, "test-model")
+	r := NewRouter(loader, "test-model", nil)
 	ctx := r.buildL1Context()
 	if ctx == "" {
 		t.Fatal("expected non-empty L1 context")
@@ -73,7 +73,7 @@ func TestBuildL1Context(t *testing.T) {
 
 func TestRouterEmptyInput(t *testing.T) {
 	loader := newMockLoader()
-	r := NewRouter(loader, "test-model")
+	r := NewRouter(loader, "test-model", nil)
 	result, err := r.Route(context.Background(), "")
 	if err != nil {
 		t.Fatalf("Route(empty) should not error: %v", err)
@@ -113,7 +113,7 @@ func TestParseClassifyResponseNoJSON(t *testing.T) {
 
 func TestBuildAvailableList(t *testing.T) {
 	loader := newMockLoader()
-	r := NewRouter(loader, "test")
+	r := NewRouter(loader, "test", nil)
 	list := r.buildAvailableList()
 	if list == "" {
 		t.Fatal("expected non-empty list")
@@ -122,7 +122,7 @@ func TestBuildAvailableList(t *testing.T) {
 
 func TestRouterUnknownAgent(t *testing.T) {
 	loader := newMockLoader()
-	r := NewRouter(loader, "test")
+	r := NewRouter(loader, "test", nil)
 
 	result, err := r.Route(context.Background(), "some random text that wont match")
 	if err != nil {

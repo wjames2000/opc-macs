@@ -58,8 +58,16 @@ func main() {
 	}
 	fmt.Printf("[系统] 已加载 %d 个 Agent 插件\n", pluginLoader.Count())
 
-	// 初始化记忆引擎
-	memoryStore, err := memory.NewEmbeddedEngine(cfg.Memory.StorePath)
+	// 初始化模型客户端
+	modelClient, err := agent.NewModelClient(cfg.Model.Provider, cfg.Model.APIBaseURL, cfg.Model.APIKey)
+	if err != nil {
+		log.Fatalf("模型初始化失败：%v\n请在 config.yaml 中配置正确的 model.provider 和 model.api_key", err)
+	}
+	fmt.Printf("[系统] 模型：%s → %s (%s)\n", cfg.Model.Provider, cfg.Model.Name, cfg.Model.APIBaseURL)
+
+	// 初始化记忆引擎（带真实 embedding）
+	embedder := memory.NewModelClientEmbedder(modelClient, cfg.Model.Name)
+	memoryStore, err := memory.NewEmbeddedEngineWithEmbedder(cfg.Memory.StorePath, embedder)
 	if err != nil {
 		log.Printf("[警告] 记忆引擎初始化失败：%v，使用空引擎降级运行", err)
 		memoryStore = memory.NewEmptyEngine()
@@ -72,18 +80,11 @@ func main() {
 	// 初始化 HITL
 	hitlHandler := hitl.NewHandler(os.Stdin, os.Stdout)
 
-	// 初始化模型客户端
-	modelClient, err := agent.NewModelClient(cfg.Model.Provider, cfg.Model.APIBaseURL, cfg.Model.APIKey)
-	if err != nil {
-		log.Fatalf("模型初始化失败：%v\n请在 config.yaml 中配置正确的 model.provider 和 model.api_key", err)
-	}
-	fmt.Printf("[系统] 模型：%s → %s (%s)\n", cfg.Model.Provider, cfg.Model.Name, cfg.Model.APIBaseURL)
-
 	// 初始化 Router
-	router := agent.NewRouter(pluginLoader, cfg.Model.Name)
+	router := agent.NewRouter(pluginLoader, cfg.Model.Name, modelClient)
 
 	// 初始化 Reviewer
-	reviewer := agent.NewReviewer(cfg.Model.Name)
+	reviewer := agent.NewReviewer(cfg.Model.Name, modelClient)
 
 	// 信号处理
 	sigCh := make(chan os.Signal, 1)
@@ -126,7 +127,7 @@ func main() {
 			continue
 		}
 
-		processTask(context.Background(), input, pluginLoader, router, reviewer, memoryStore, hitlHandler, modelClient, cfg)
+		processTask(context.Background(), input, pluginLoader, router, reviewer, memoryStore, hitlHandler, modelClient, embedder, cfg)
 	}
 
 	fmt.Println("\n再见！")
@@ -135,7 +136,7 @@ func main() {
 func processTask(ctx context.Context, input string, loader *runtime.Loader,
 	router *agent.Router, reviewer *agent.Reviewer,
 	store memory.MemoryStore, hitlHandler *hitl.Handler,
-	modelClient runtime.ModelClient, cfg *config.Config) {
+	modelClient runtime.ModelClient, embedder memory.Embedder, cfg *config.Config) {
 
 	startTime := time.Now()
 	fmt.Printf("\n[任务] 处理中：%s\n", input)
@@ -250,7 +251,7 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 
 	// 6. 写入记忆
 	keyDecisions := extractKeyDecisions(execResult.Data)
-	entry := memory.BuildMemoryEntry(
+	entry := memory.BuildMemoryEntryWithEmbedder(taskCtx,
 		routeResult.Info.Name,
 		taskInput,
 		fmt.Sprintf("%+v", execResult.Data),
@@ -260,6 +261,7 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 			"tokens_in":  fmt.Sprintf("%d", execResult.TokenUsage.InputTokens),
 			"tokens_out": fmt.Sprintf("%d", execResult.TokenUsage.OutputTokens),
 		},
+		embedder,
 	)
 	if err := store.Store(taskCtx, entry); err != nil {
 		fmt.Printf("[警告] 记忆写入失败：%v\n", err)

@@ -35,6 +35,7 @@ type ReviewResult struct {
 // ModelClient 模型调用接口，每个插件通过 opts 中的 "model_client" 获取
 type ModelClient interface {
 	Call(ctx context.Context, req ModelRequest) (*ModelResponse, error)
+	Embed(ctx context.Context, req EmbedRequest) (*EmbedResponse, error)
 }
 
 type ModelRequest struct {
@@ -48,6 +49,16 @@ type ModelResponse struct {
 	InputTokens  int
 	OutputTokens int
 	RawResponse  string // 模型原始响应（含思考过程）
+}
+
+type EmbedRequest struct {
+	Model string
+	Input string
+}
+
+type EmbedResponse struct {
+	Embedding   []float32
+	InputTokens int
 }
 
 type ExecutionResult struct {

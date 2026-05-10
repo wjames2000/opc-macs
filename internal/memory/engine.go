@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/wjames2000/opc-macs/internal/runtime"
 )
 
 func CosineSimilarity(a, b []float32) float32 {
@@ -35,23 +36,31 @@ type EmbeddedEngine struct {
 	mu        sync.RWMutex
 	entries   []*MemoryEntry
 	storePath string
+	embedder  Embedder // 可选：真实 embedding 模型
+}
+
+// Embedder 抽象 embedding 生成接口
+type Embedder interface {
+	Embed(ctx context.Context, text string) ([]float32, error)
 }
 
 func NewEmbeddedEngine(storePath string) (*EmbeddedEngine, error) {
+	return NewEmbeddedEngineWithEmbedder(storePath, nil)
+}
+
+func NewEmbeddedEngineWithEmbedder(storePath string, embedder Embedder) (*EmbeddedEngine, error) {
 	dir := filepath.Dir(storePath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return nil, fmt.Errorf("memory: create dir failed: %w", err)
 	}
-
 	engine := &EmbeddedEngine{
 		entries:   make([]*MemoryEntry, 0),
 		storePath: storePath,
+		embedder:  embedder,
 	}
-
 	if err := engine.loadFromDisk(); err != nil {
-		return engine, nil // start empty on load failure
+		return engine, nil
 	}
-
 	return engine, nil
 }
 
@@ -59,6 +68,27 @@ func NewEmptyEngine() *EmbeddedEngine {
 	return &EmbeddedEngine{
 		entries: make([]*MemoryEntry, 0),
 	}
+}
+
+// ModelClientEmbedder wraps a runtime.ModelClient as an Embedder
+type ModelClientEmbedder struct {
+	client runtime.ModelClient
+	model  string
+}
+
+func NewModelClientEmbedder(client runtime.ModelClient, model string) *ModelClientEmbedder {
+	return &ModelClientEmbedder{client: client, model: model}
+}
+
+func (m *ModelClientEmbedder) Embed(ctx context.Context, text string) ([]float32, error) {
+	resp, err := m.client.Embed(ctx, runtime.EmbedRequest{
+		Model: m.model,
+		Input: text,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Embedding, nil
 }
 
 func (e *EmbeddedEngine) Store(ctx context.Context, entry *MemoryEntry) error {
@@ -135,7 +165,17 @@ func (e *EmbeddedEngine) Search(ctx context.Context, query []float32, topK int) 
 }
 
 func (e *EmbeddedEngine) Recall(ctx context.Context, text string, topK int) ([]*MemoryEntry, error) {
-	embedding := mockEmbedding(text)
+	var embedding []float32
+	if e.embedder != nil {
+		var err error
+		embedding, err = e.embedder.Embed(ctx, text)
+		if err != nil {
+			// 回退到 mock embedding
+			embedding = mockEmbedding(text)
+		}
+	} else {
+		embedding = mockEmbedding(text)
+	}
 	return e.Search(ctx, embedding, topK)
 }
 
@@ -173,19 +213,31 @@ func (e *EmbeddedEngine) loadFromDisk() error {
 }
 
 func BuildMemoryEntry(taskType, userInput, agentOutput string, keyDecisions []string, metadata map[string]string) *MemoryEntry {
+	return BuildMemoryEntryWithEmbedder(context.Background(), taskType, userInput, agentOutput, keyDecisions, metadata, nil)
+}
+
+func BuildMemoryEntryWithEmbedder(ctx context.Context, taskType, userInput, agentOutput string,
+	keyDecisions []string, metadata map[string]string, embedder Embedder) *MemoryEntry {
 	if metadata == nil {
 		metadata = make(map[string]string)
 	}
-	return &MemoryEntry{
+	entry := &MemoryEntry{
 		ID:           uuid.New().String(),
 		CreatedAt:    time.Now(),
 		TaskType:     taskType,
 		UserInput:    userInput,
 		AgentOutput:  agentOutput,
 		KeyDecisions: keyDecisions,
-		Embedding:    mockEmbedding(userInput),
 		Metadata:     metadata,
 	}
+	if embedder != nil {
+		if emb, err := embedder.Embed(ctx, userInput); err == nil {
+			entry.Embedding = emb
+			return entry
+		}
+	}
+	entry.Embedding = mockEmbedding(userInput)
+	return entry
 }
 
 func mockEmbedding(text string) []float32 {

@@ -12,24 +12,30 @@ import (
 type Reviewer struct {
 	model      string
 	maxRetries int
+	client     runtime.ModelClient
 }
 
-func NewReviewer(model string) *Reviewer {
+func NewReviewer(model string, client runtime.ModelClient) *Reviewer {
 	return &Reviewer{
 		model:      model,
 		maxRetries: 1,
+		client:     client,
 	}
 }
 
 func (r *Reviewer) Review(ctx context.Context, output interface{}, checkpoints []string, trace string) (*runtime.ReviewResult, error) {
-	// Try LLM-based review
-	if r.model != "" {
+	// Try LLM-based review using ModelClient
+	if r.client != nil && r.model != "" {
 		prompt := r.buildReviewPrompt(output, checkpoints)
-		response, err := callLLM(ctx, r.model, prompt)
+		resp, err := r.client.Call(ctx, runtime.ModelRequest{
+			Model:        r.model,
+			SystemPrompt: "你是一个质量审查智能体，请按检查清单逐项审查并给出评分。",
+			UserMessage:  prompt,
+		})
 		if err == nil {
-			result, parseErr := parseReviewResponse(response)
+			result, parseErr := parseReviewResponse(resp.Content)
 			if parseErr == nil {
-				result.Trace = response
+				result.Trace = resp.RawResponse
 				return result, nil
 			}
 		}

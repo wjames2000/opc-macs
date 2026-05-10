@@ -39,10 +39,11 @@ type classifyResponse struct {
 type Router struct {
 	plugins PluginSource
 	model   string
+	client  runtime.ModelClient
 }
 
-func NewRouter(plugins PluginSource, model string) *Router {
-	return &Router{plugins: plugins, model: model}
+func NewRouter(plugins PluginSource, model string, client runtime.ModelClient) *Router {
+	return &Router{plugins: plugins, model: model, client: client}
 }
 
 func (r *Router) buildL1Context() string {
@@ -87,13 +88,20 @@ func (r *Router) buildClassifyPrompt(input string) string {
 
 func (r *Router) classify(ctx context.Context, input string) (string, float32, error) {
 	prompt := r.buildClassifyPrompt(input)
+	systemPrompt := r.buildL1Context()
 
-	response, err := callLLM(ctx, r.model, prompt)
-	if err != nil {
-		return "", 0, fmt.Errorf("router: llm call failed: %w", err)
+	if r.client != nil {
+		resp, err := r.client.Call(ctx, runtime.ModelRequest{
+			Model:        r.model,
+			SystemPrompt: systemPrompt,
+			UserMessage:  prompt,
+		})
+		if err == nil {
+			return parseClassifyResponse(resp.Content)
+		}
 	}
 
-	return parseClassifyResponse(response)
+	return "", 0, fmt.Errorf("router: llm call failed")
 }
 
 func extractFirstJSON(raw string) string {

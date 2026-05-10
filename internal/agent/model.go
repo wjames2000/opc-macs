@@ -189,3 +189,49 @@ func (c *httpClient) callClaude(ctx context.Context, req runtime.ModelRequest) (
 		RawResponse:  string(respBody),
 	}, nil
 }
+
+type openAIEmbedReq struct {
+	Model string `json:"model"`
+	Input string `json:"input"`
+}
+
+type openAIEmbedResp struct {
+	Data []struct {
+		Embedding []float32 `json:"embedding"`
+	} `json:"data"`
+	Usage struct {
+		PromptTokens int `json:"prompt_tokens"`
+	} `json:"usage"`
+}
+
+func (c *httpClient) Embed(ctx context.Context, req runtime.EmbedRequest) (*runtime.EmbedResponse, error) {
+	if c.apiKey == "" {
+		return nil, fmt.Errorf("API Key 未配置：请在 config.yaml 中设置 model.api_key")
+	}
+	embedReq := openAIEmbedReq{Model: req.Model, Input: req.Input}
+	if embedReq.Model == "" {
+		embedReq.Model = "text-embedding-3-small"
+	}
+	body, _ := json.Marshal(embedReq)
+	httpReq, _ := http.NewRequestWithContext(ctx, "POST", c.baseURL+"/v1/embeddings", bytes.NewReader(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Authorization", "Bearer "+c.apiKey)
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("[%s] embedding 连接失败：%w", c.provider, err)
+	}
+	defer resp.Body.Close()
+	respBody, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("[%s] embedding HTTP %d：%s", c.provider, resp.StatusCode, string(respBody))
+	}
+	var embedResp openAIEmbedResp
+	json.Unmarshal(respBody, &embedResp)
+	if len(embedResp.Data) == 0 {
+		return nil, fmt.Errorf("[%s] embedding 返回空结果", c.provider)
+	}
+	return &runtime.EmbedResponse{
+		Embedding:   embedResp.Data[0].Embedding,
+		InputTokens: embedResp.Usage.PromptTokens,
+	}, nil
+}

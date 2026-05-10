@@ -63,7 +63,7 @@ func TestReviewParseNoJSON(t *testing.T) {
 }
 
 func TestBuildReviewPrompt(t *testing.T) {
-	r := NewReviewer("test-model")
+	r := NewReviewer("test-model", nil)
 	checkpoints := []string{"格式检查", "内容检查", "长度检查"}
 	prompt := r.buildReviewPrompt(map[string]string{"key": "value"}, checkpoints)
 	if prompt == "" {
@@ -75,7 +75,7 @@ func TestBuildReviewPrompt(t *testing.T) {
 }
 
 func TestReviewerReviewWithResult(t *testing.T) {
-	r := NewReviewer("test-model")
+	r := NewReviewer("test-model", nil)
 	result, err := r.Review(nil, map[string]string{"test": "data"}, []string{"check1"}, "")
 	if err != nil {
 		t.Fatalf("Review should not error: %v", err)
@@ -96,7 +96,7 @@ func TestReviewerReviewWithResult(t *testing.T) {
 }
 
 func TestNewReviewer(t *testing.T) {
-	r := NewReviewer("gemini-2.0-flash")
+	r := NewReviewer("gemini-2.0-flash", nil)
 	if r == nil {
 		t.Fatal("NewReviewer returned nil")
 	}
