@@ -1,4 +1,4 @@
-.PHONY: all build-main build-plugins test test-all clean run lint vet
+.PHONY: all build-main build-plugins test test-all clean run lint vet new-plugin
 
 GO := $(shell which go 2>/dev/null || echo "/usr/local/Cellar/go/1.26.2/bin/go")
 BUILD_DIR := build
@@ -47,3 +47,11 @@ install-deps:
 	$(GO) get github.com/google/uuid
 	$(GO) get gopkg.in/yaml.v3
 	$(GO) mod tidy
+
+new-plugin:
+	@if [ -z "$(NAME)" ]; then \
+		echo "用法: make new-plugin NAME=plugin_name SUMMARY='简述' TAGS='tag1 tag2'"; \
+		echo "示例: make new-plugin NAME=seo_optimizer SUMMARY='SEO优化' TAGS='seo marketing'"; \
+		exit 1; \
+	fi
+	@scripts/create-plugin.sh "$(NAME)" "$(SUMMARY)" $(TAGS)
