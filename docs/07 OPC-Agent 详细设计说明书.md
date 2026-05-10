@@ -313,12 +313,71 @@ func (p *CopywriterPlugin) Review(ctx context.Context,
 var Agent CopywriterPlugin
 ```
 
-#### 3.2.5 插件构建
+#### 3.2.5 xhs_poster 插件示例
+
+```go
+// plugins/xhs_poster/plugin.go
+package main
+
+import "github.com/yourname/opc-agent/internal/runtime"
+
+type XHSPosterPlugin struct{}
+
+func (p *XHSPosterPlugin) Name() string { return "xhs_poster" }
+
+func (p *XHSPosterPlugin) Info() runtime.PluginInfo {
+    return runtime.PluginInfo{
+        Name:        "xhs_poster",
+        Summary:     "生成小红书种草笔记内容",
+        Version:     "1.0.0",
+        Tags:        []string{"social-media", "xiaohongshu", "content-marketing"},
+        RequiresHITL: true,
+    }
+}
+
+func (p *XHSPosterPlugin) Execute(ctx context.Context,
+    input string, opts map[string]interface{}) (*runtime.ExecutionResult, error) {
+
+    memories, _ := opts["memories"].([]string)
+    _ = memories
+
+    // 构建小红书风格 prompt
+    prompt := buildXHSPrompt(input, memories)
+    response := callLLM(ctx, cfg.Model.Name, prompt)
+
+    output, err := parseXHSOutput(response)
+    if err != nil {
+        return nil, err
+    }
+
+    return &runtime.ExecutionResult{
+        Data: output,
+        TokenUsage: runtime.TokenUsage{
+            InputTokens:  response.InputTokens,
+            OutputTokens: response.OutputTokens,
+        },
+    }, nil
+}
+
+func (p *XHSPosterPlugin) Review(ctx context.Context,
+    output interface{}) (*runtime.ReviewResult, error) {
+    return nil, nil
+}
+
+// 必须导出：插件入口符号
+var Agent XHSPosterPlugin
+```
+
+#### 3.2.6 插件构建
 
 ```bash
 # 每个插件独立编译，仅需几秒
 cd plugins/copywriter
 go build -buildmode=plugin -o ../../build/plugins/copywriter.so .
+cd plugins/email_sorter
+go build -buildmode=plugin -o ../../build/plugins/email_sorter.so .
+cd plugins/xhs_poster
+go build -buildmode=plugin -o ../../build/plugins/xhs_poster.so .
 
 # 新增一个插件，只需这一步
 cd plugins/new_agent
