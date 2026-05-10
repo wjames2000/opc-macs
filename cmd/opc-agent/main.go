@@ -129,6 +129,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	session := agent.NewSession(50)
 	tokenTracker := agent.NewTokenTracker()
+	resultCache := agent.NewResultCache(100, 30*time.Minute)
 	hasHistory := false
 
 	for {
@@ -206,7 +207,7 @@ func main() {
 		}
 
 		taskInput := input
-		resultStr, routeName := processTask(context.Background(), input, pluginLoader, router, reviewer, memoryStore, hitlHandler, modelClient, embedder, cfg, session, tokenTracker)
+		resultStr, routeName := processTask(context.Background(), input, pluginLoader, router, reviewer, memoryStore, hitlHandler, modelClient, embedder, cfg, session, tokenTracker, resultCache)
 
 		session.AddTurn(taskInput, routeName, resultStr)
 		_ = hasHistory
@@ -220,7 +221,7 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 	store memory.MemoryStore, hitlHandler *hitl.Handler,
 	modelClient runtime.ModelClient, embedder memory.Embedder,
 	cfg *config.Config, session *agent.Session,
-	tracker *agent.TokenTracker) (resultStr string, routeName string) {
+	tracker *agent.TokenTracker, cache *agent.ResultCache) (resultStr string, routeName string) {
 
 	startTime := time.Now()
 	fmt.Printf("\n[任务] 处理中：%s\n", input)
@@ -255,6 +256,9 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 		fmt.Printf("[任务] 任务描述：%s\n", taskInput)
 	}
 
+	// Check cache
+	cached := cache.Get(routeResult.Info.Name, taskInput)
+
 	// 注入会话历史到 opts
 	history := session.FormatHistory(5)
 	_ = history
@@ -265,7 +269,7 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 		fmt.Printf("[记忆] 找到 %d 条相关记忆\n", len(memories))
 	}
 
-	// 3. 调用插件 Execute
+	// 3. 调用插件 Execute（或使用缓存）
 	opts := map[string]interface{}{
 		"memories":      memories,
 		"model_client":  modelClient,
@@ -276,6 +280,22 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 	if err != nil {
 		fmt.Printf("[错误] Agent 执行失败：%v\n", err)
 		return "", ""
+	}
+	if cached != nil {
+		execResult = cached
+		modelInfo := execResult.TokenUsage.ModelName
+		if modelInfo == "" {
+			modelInfo = routeResult.Info.ModelName
+		}
+		fmt.Println("[缓存] 命中缓存，跳过模型调用")
+	} else {
+		execResult, err = routeResult.Plugin.Execute(taskCtx, taskInput, opts)
+		if err != nil {
+			fmt.Printf("[错误] Agent 执行失败：%v\n", err)
+			return "", ""
+		}
+		// Cache the result
+		cache.Set(routeResult.Info.Name, taskInput, execResult)
 	}
 	modelInfo := execResult.TokenUsage.ModelName
 	if modelInfo == "" {
