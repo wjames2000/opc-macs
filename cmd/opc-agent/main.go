@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -41,6 +42,12 @@ func main() {
 	}
 
 	fmt.Printf("OPC-Agent v%s 启动中...\n", version)
+
+	// 初始化结构化日志
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	})))
+	slog.Info("system_start", "version", version, "build", buildID)
 
 	// 初始化插件加载器
 	pluginLoader := runtime.NewLoader(cfg.Runtime.PluginsDir)
@@ -103,6 +110,7 @@ func main() {
 
 	scanner := bufio.NewScanner(os.Stdin)
 	session := agent.NewSession(50)
+	tokenTracker := agent.NewTokenTracker()
 	hasHistory := false
 
 	for {
@@ -127,6 +135,14 @@ func main() {
 		}
 		if input == "stats" {
 			printStats(memoryStore)
+			continue
+		}
+		if input == "usage" || input == "cost" {
+			fmt.Println(tokenTracker.Summary())
+			continue
+		}
+		if input == "audit" {
+			fmt.Println(tokenTracker.RecentCalls(20))
 			continue
 		}
 		if input == "new" || input == "reset" {
@@ -172,7 +188,7 @@ func main() {
 		}
 
 		taskInput := input
-		resultStr, routeName := processTask(context.Background(), input, pluginLoader, router, reviewer, memoryStore, hitlHandler, modelClient, embedder, cfg, session)
+		resultStr, routeName := processTask(context.Background(), input, pluginLoader, router, reviewer, memoryStore, hitlHandler, modelClient, embedder, cfg, session, tokenTracker)
 
 		session.AddTurn(taskInput, routeName, resultStr)
 		_ = hasHistory
@@ -185,7 +201,8 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 	router *agent.Router, reviewer *agent.Reviewer,
 	store memory.MemoryStore, hitlHandler *hitl.Handler,
 	modelClient runtime.ModelClient, embedder memory.Embedder,
-	cfg *config.Config, session *agent.Session) (resultStr string, routeName string) {
+	cfg *config.Config, session *agent.Session,
+	tracker *agent.TokenTracker) (resultStr string, routeName string) {
 
 	startTime := time.Now()
 	fmt.Printf("\n[任务] 处理中：%s\n", input)
@@ -194,14 +211,18 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 	taskCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
+	slog.Info("task_start", "input", input)
+
 	// 1. Router 分发
 	routeResult, err := router.Route(taskCtx, input)
 	if err != nil {
 		fmt.Printf("[错误] 路由失败：%v\n", err)
+		slog.Error("route_failed", "error", err, "input", input)
 		return "", ""
 	}
 	if routeResult.Action == agent.RouteActionUnknown {
 		fmt.Printf("%s\n", routeResult.Message)
+		slog.Warn("route_unknown", "input", input)
 		return "", ""
 	}
 
@@ -247,6 +268,10 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 	}
 	fmt.Printf("[执行] 完成 (model=%s in=%d out=%d)\n",
 		modelInfo, execResult.TokenUsage.InputTokens, execResult.TokenUsage.OutputTokens)
+
+	tracker.RecordCall(routeResult.Info.Name, modelInfo, "execute",
+		execResult.TokenUsage.InputTokens, execResult.TokenUsage.OutputTokens,
+		time.Since(startTime), err == nil)
 
 	// 输出 Agent 思考过程
 	if execResult.RawTrace != "" {
@@ -330,6 +355,14 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 	fmt.Println(resultStr)
 	fmt.Printf("══════════════════════════════════════\n")
 
+	slog.Info("task_complete",
+		"agent", routeResult.Info.Name,
+		"model", modelInfo,
+		"tokens_in", execResult.TokenUsage.InputTokens,
+		"tokens_out", execResult.TokenUsage.OutputTokens,
+		"duration_ms", elapsed.Milliseconds(),
+	)
+
 	return
 }
 
@@ -339,6 +372,8 @@ func printHelp() {
 	fmt.Println("  #<技能> <任务>     指定技能处理（如 #文案 推广文案、#邮件 投诉信）")
 	fmt.Println("  <自然语言>          由 Router 自动识别意图并分发")
 	fmt.Println("  plugins             查看已加载的 Agent 插件")
+	fmt.Println("  usage/cost         查看 Token 用量与费用估算")
+	fmt.Println("  audit              查看最近调用记录")
 	fmt.Println("  stats               查看系统统计信息")
 	fmt.Println("  new                 开始新会话（清空上下文）")
 	fmt.Println("  history             查看当前会话历史")
