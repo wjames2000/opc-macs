@@ -332,9 +332,11 @@ func (r *Router) fallbackClassify(input string) (string, float32) {
 // chineseKeywords maps agent names to Chinese keyword patterns for
 // fallback classification when LLM is unavailable.
 var chineseKeywords = map[string][]string{
-	"copywriter":   {"文案", "推广", "营销", "广告", "宣传", "产品", "描述", "标题", "广告词", "促销"},
-	"email_sorter": {"邮件", "email", "投诉", "退款", "咨询", "客户", "回复", "来信", "收件", "发件"},
-	"xhs_poster":   {"小红书", "种草", "笔记", "xhs", "好物", "测评", "推荐", "安利", "分享"},
+	"copywriter":           {"文案", "推广", "营销", "广告", "宣传", "产品", "描述", "标题", "广告词", "促销"},
+	"email_sorter":         {"邮件", "email", "投诉", "退款", "咨询", "客户", "回复", "来信", "收件", "发件"},
+	"xhs_poster":           {"小红书", "种草", "笔记", "xhs", "好物", "测评", "推荐", "安利", "分享"},
+	"competitive_analysis": {"竞品", "竞争", "分析", "SWOT", "对手", "市场", "对比", "竞对"},
+	"meeting_minutes":      {"会议", "纪要", "会议记录", "议题", "待办", "action", "决策", "讨论"},
 }
 
 // buildKeywords generates search keywords from a plugin's metadata and Chinese keywords

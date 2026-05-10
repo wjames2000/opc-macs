@@ -16,6 +16,8 @@ func RegisterAll(loader *runtime.Loader) error {
 		&CopywriterPlugin{},
 		&EmailSorterPlugin{},
 		&XHSPosterPlugin{},
+		&CompetitiveAnalysisPlugin{},
+		&MeetingMinutesPlugin{},
 	}
 	for _, a := range agents {
 		if err := loader.Register(a); err != nil {
@@ -364,6 +366,185 @@ func (p *XHSPosterPlugin) Review(_ context.Context, output interface{}) (*runtim
 		Passed: allPassed, Score: scoreFromChecks(checks),
 		CheckResults: checks, ShouldRetry: !allPassed,
 		Summary: fmt.Sprintf("xhs_poster: %d/%d checks passed", countPassed(checks), len(checks)),
+	}, nil
+}
+
+// ──────────────────────────────────────────────
+// CompetitiveAnalysisPlugin — 竞品分析
+// ──────────────────────────────────────────────
+
+var competitiveSystemPrompt = `你是资深的商业分析师，擅长竞品分析。请对用户提供的竞品信息进行结构化分析。
+
+[输出格式要求 JSON]
+{
+  "competitor": "竞品名称",
+  "market_position": "市场定位概述",
+  "strengths": ["优势1", "优势2", "优势3"],
+  "weaknesses": ["劣势1", "劣势2", "劣势3"],
+  "opportunities": ["机会1", "机会2"],
+  "threats": ["威胁1", "威胁2"],
+  "differentiation": "差异化建议",
+  "risk_level": "低/中/高",
+  "summary": "综合结论"
+}`
+
+type CompetitiveAnalysisPlugin struct{}
+
+func (p *CompetitiveAnalysisPlugin) Name() string { return "competitive_analysis" }
+
+func (p *CompetitiveAnalysisPlugin) Info() runtime.PluginInfo {
+	return runtime.PluginInfo{
+		Name:         "competitive_analysis",
+		Summary:      "对竞品进行 SWOT 结构化分析",
+		Version:      "1.0.0",
+		Tags:         []string{"analysis", "strategy", "business", "SWOT"},
+		RequiresHITL: false,
+	}
+}
+
+func (p *CompetitiveAnalysisPlugin) Execute(ctx context.Context, input string, opts map[string]interface{}) (*runtime.ExecutionResult, error) {
+	client, _ := opts["model_client"].(runtime.ModelClient)
+	if client == nil {
+		return nil, fmt.Errorf("competitive_analysis: 未配置模型 API")
+	}
+	modelName := resolveModelName(opts, p.Info().ModelName)
+
+	memories, _ := opts["memories"].([]string)
+	var sb strings.Builder
+	sb.WriteString(input)
+	if len(memories) > 0 {
+		sb.WriteString("\n\n参考历史信息：\n")
+		for i, m := range memories {
+			if i >= 3 {
+				break
+			}
+			sb.WriteString(fmt.Sprintf("- %s\n", m))
+		}
+	}
+	if h, _ := opts["history"].(string); h != "" {
+		sb.WriteString("\n\n")
+		sb.WriteString(h)
+	}
+
+	resp, err := client.Call(ctx, runtime.ModelRequest{
+		Model:        modelName,
+		SystemPrompt: competitiveSystemPrompt,
+		UserMessage:  sb.String(),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("competitive_analysis: 模型调用失败：%w", err)
+	}
+
+	var output map[string]interface{}
+	if err := json.Unmarshal([]byte(resp.Content), &output); err != nil {
+		return nil, fmt.Errorf("competitive_analysis: 输出解析失败：%w", err)
+	}
+
+	return &runtime.ExecutionResult{
+		Data: output,
+		TokenUsage: runtime.TokenUsage{InputTokens: resp.InputTokens, OutputTokens: resp.OutputTokens, ModelName: modelName},
+		RawTrace:   resp.RawResponse,
+	}, nil
+}
+
+func (p *CompetitiveAnalysisPlugin) Review(_ context.Context, output interface{}) (*runtime.ReviewResult, error) {
+	data, ok := output.(map[string]interface{})
+	if !ok {
+		return &runtime.ReviewResult{Passed: false, Score: 0, Summary: "invalid output"}, nil
+	}
+	checks := []runtime.CheckResult{}
+	if _, ok := data["strengths"].([]interface{}); ok {
+		checks = append(checks, runtime.CheckResult{Item: "strengths present", Passed: true})
+	}
+	if _, ok := data["weaknesses"].([]interface{}); ok {
+		checks = append(checks, runtime.CheckResult{Item: "weaknesses present", Passed: true})
+	}
+	if _, ok := data["risk_level"].(string); ok {
+		checks = append(checks, runtime.CheckResult{Item: "risk_level present", Passed: true})
+	}
+	return &runtime.ReviewResult{
+		Passed: true, Score: scoreFromChecks(checks),
+		CheckResults: checks, Summary: "competitive_analysis: analysis complete",
+	}, nil
+}
+
+// ──────────────────────────────────────────────
+// MeetingMinutesPlugin — 会议纪要
+// ──────────────────────────────────────────────
+
+var meetingMinutesSystemPrompt = `你是专业的会议纪要撰写助手。请将会议讨论内容整理为结构化的会议纪要。
+
+[输出格式要求 JSON]
+{
+  "title": "会议主题",
+  "time": "会议时间（从内容推断）",
+  "participants": ["参会人1", "参会人2"],
+  "agenda": ["议题1", "议题2"],
+  "decisions": ["决策1", "决策2"],
+  "action_items": [
+    {"task": "待办事项", "owner": "负责人", "deadline": "截止日期"}
+  ],
+  "next_steps": "下一步计划",
+  "key_discussions": "关键讨论内容摘要"
+}`
+
+type MeetingMinutesPlugin struct{}
+
+func (p *MeetingMinutesPlugin) Name() string { return "meeting_minutes" }
+
+func (p *MeetingMinutesPlugin) Info() runtime.PluginInfo {
+	return runtime.PluginInfo{
+		Name:         "meeting_minutes",
+		Summary:      "将会议讨论整理为结构化会议纪要",
+		Version:      "1.0.0",
+		Tags:         []string{"meeting", "minutes", "productivity", "document"},
+		RequiresHITL: false,
+	}
+}
+
+func (p *MeetingMinutesPlugin) Execute(ctx context.Context, input string, opts map[string]interface{}) (*runtime.ExecutionResult, error) {
+	client, _ := opts["model_client"].(runtime.ModelClient)
+	if client == nil {
+		return nil, fmt.Errorf("meeting_minutes: 未配置模型 API")
+	}
+	modelName := resolveModelName(opts, p.Info().ModelName)
+
+	resp, err := client.Call(ctx, runtime.ModelRequest{
+		Model:        modelName,
+		SystemPrompt: meetingMinutesSystemPrompt,
+		UserMessage:  input,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("meeting_minutes: 模型调用失败：%w", err)
+	}
+
+	var output map[string]interface{}
+	if err := json.Unmarshal([]byte(resp.Content), &output); err != nil {
+		return nil, fmt.Errorf("meeting_minutes: 输出解析失败：%w", err)
+	}
+
+	return &runtime.ExecutionResult{
+		Data: output,
+		TokenUsage: runtime.TokenUsage{InputTokens: resp.InputTokens, OutputTokens: resp.OutputTokens, ModelName: modelName},
+		RawTrace:   resp.RawResponse,
+	}, nil
+}
+
+func (p *MeetingMinutesPlugin) Review(_ context.Context, output interface{}) (*runtime.ReviewResult, error) {
+	data, ok := output.(map[string]interface{})
+	if !ok {
+		return &runtime.ReviewResult{Passed: false, Score: 0, Summary: "invalid output"}, nil
+	}
+	checks := []runtime.CheckResult{}
+	if _, ok := data["decisions"].([]interface{}); ok {
+		checks = append(checks, runtime.CheckResult{Item: "decisions present", Passed: true})
+	}
+	if _, ok := data["action_items"].([]interface{}); ok {
+		checks = append(checks, runtime.CheckResult{Item: "action_items present", Passed: true})
+	}
+	return &runtime.ReviewResult{
+		Passed: true, Score: scoreFromChecks(checks),
+		CheckResults: checks, Summary: "meeting_minutes: processed",
 	}, nil
 }
 
