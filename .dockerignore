@@ -1,0 +1,11 @@
+.git/
+.gitignore
+.idea/
+.sisyphus/
+docs/
+data/
+build/
+*.md
+*.so
+opc-agent
+coverage.out

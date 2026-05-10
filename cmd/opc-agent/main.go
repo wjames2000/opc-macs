@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -28,11 +29,28 @@ var (
 func main() {
 	configPath := flag.String("config", "config.yaml", "配置文件路径")
 	showVersion := flag.Bool("version", false, "显示版本")
+	healthPort := flag.Int("health", 0, "健康检查 HTTP 端口 (默认 0=不启动)")
 	flag.Parse()
 
 	if *showVersion {
 		fmt.Printf("OPC-Agent v%s (build %s)\n", version, buildID)
 		os.Exit(0)
+	}
+
+	// 健康检查 HTTP 服务（Docker HEALTHCHECK 用）
+	if *healthPort > 0 {
+		http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"status":"ok","version":"%s","build":"%s"}`, version, buildID)
+		})
+		go func() {
+			addr := fmt.Sprintf(":%d", *healthPort)
+			fmt.Printf("[健康检查] HTTP 服务启动在 %s\n", addr)
+			if err := http.ListenAndServe(addr, nil); err != nil {
+				log.Printf("[健康检查] 服务停止：%v", err)
+			}
+		}()
 	}
 
 	// 加载配置

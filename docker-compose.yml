@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  opc-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: opc-agent:latest
+    container_name: opc-agent
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      # 持久化记忆引擎数据
+      - opc-agent-data:/app/data
+      # 配置可外部挂载
+      - ./config.yaml:/app/config.yaml:ro
+    environment:
+      - TZ=Asia/Shanghai
+    healthcheck:
+      test: ["CMD", "./opc-agent", "--health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  opc-agent-data:
+    driver: local
