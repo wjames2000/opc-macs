@@ -350,10 +350,10 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 
 	// 7. 输出结果
 	elapsed := time.Since(startTime)
-	resultStr = fmt.Sprintf("%+v", execResult.Data)
+	resultStr = agent.FormatOutput(execResult.Data, routeResult.Info.Name)
 	fmt.Printf("\n══════════ 输出结果 (%.2fs) ══════════\n", elapsed.Seconds())
-	fmt.Println(resultStr)
-	fmt.Printf("══════════════════════════════════════\n")
+	fmt.Print(resultStr)
+	fmt.Printf("\n══════════════════════════════════════\n")
 
 	slog.Info("task_complete",
 		"agent", routeResult.Info.Name,
