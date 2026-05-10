@@ -67,6 +67,7 @@ func (p *CopywriterPlugin) Execute(ctx context.Context, input string, opts map[s
 	modelName := resolveModelName(opts, p.Info().ModelName)
 
 	memories, _ := opts["memories"].([]string)
+	history, _ := opts["history"].(string)
 	var sb strings.Builder
 	sb.WriteString(input)
 	if len(memories) > 0 {
@@ -77,6 +78,10 @@ func (p *CopywriterPlugin) Execute(ctx context.Context, input string, opts map[s
 			}
 			sb.WriteString(fmt.Sprintf("- %s\n", m))
 		}
+	}
+	if history != "" {
+		sb.WriteString("\n\n")
+		sb.WriteString(history)
 	}
 
 	resp, err := client.Call(ctx, runtime.ModelRequest{
@@ -201,10 +206,15 @@ func (p *EmailSorterPlugin) Execute(ctx context.Context, input string, opts map[
 		}
 	}
 
+	payload := input
+	if h, _ := opts["history"].(string); h != "" {
+		payload = h + "\n\n当前邮件：\n" + input
+	}
+
 	resp, err := client.Call(ctx, runtime.ModelRequest{
 		Model:        modelName,
 		SystemPrompt: emailSorterSystemPrompt,
-		UserMessage:  input,
+		UserMessage:  payload,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("email_sorter: 模型调用失败：%w", err)
@@ -286,6 +296,7 @@ func (p *XHSPosterPlugin) Execute(ctx context.Context, input string, opts map[st
 	modelName := resolveModelName(opts, p.Info().ModelName)
 
 	memories, _ := opts["memories"].([]string)
+	history, _ := opts["history"].(string)
 	var sb strings.Builder
 	sb.WriteString(input)
 	if len(memories) > 0 {
@@ -296,6 +307,10 @@ func (p *XHSPosterPlugin) Execute(ctx context.Context, input string, opts map[st
 			}
 			sb.WriteString(fmt.Sprintf("- %s\n", m))
 		}
+	}
+	if history != "" {
+		sb.WriteString("\n\n")
+		sb.WriteString(history)
 	}
 
 	resp, err := client.Call(ctx, runtime.ModelRequest{
