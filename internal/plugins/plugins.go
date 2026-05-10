@@ -61,12 +61,10 @@ func (p *CopywriterPlugin) Info() runtime.PluginInfo {
 
 func (p *CopywriterPlugin) Execute(ctx context.Context, input string, opts map[string]interface{}) (*runtime.ExecutionResult, error) {
 	client, _ := opts["model_client"].(runtime.ModelClient)
-	modelName := "gemini-2.0-flash"
-
 	if client == nil {
-		// Dev mode fallback
-		return devCopywrite(input), nil
+		return nil, fmt.Errorf("copywriter: 未配置模型 API，请在 config.yaml 中设置 model.api_key")
 	}
+	modelName := defaultModel(p.Info().ModelName)
 
 	memories, _ := opts["memories"].([]string)
 	var sb strings.Builder
@@ -87,13 +85,12 @@ func (p *CopywriterPlugin) Execute(ctx context.Context, input string, opts map[s
 		UserMessage:  sb.String(),
 	})
 	if err != nil {
-		return devCopywrite(input), nil
+		return nil, fmt.Errorf("copywriter: 模型调用失败：%w", err)
 	}
 
-	// Try to parse as JSON; fallback to structured text
 	var output map[string]interface{}
 	if err := json.Unmarshal([]byte(resp.Content), &output); err != nil {
-		output = devCopywrite(input).Data.(map[string]interface{})
+		return nil, fmt.Errorf("copywriter: 模型输出解析失败（期望 JSON 格式）：%w", err)
 	}
 
 	return &runtime.ExecutionResult{
@@ -142,79 +139,6 @@ func (p *CopywriterPlugin) Review(_ context.Context, output interface{}) (*runti
 	}, nil
 }
 
-func devCopywrite(input string) *runtime.ExecutionResult {
-	product := extractProductName(input)
-	style := detectStyle(input)
-
-	trace := fmt.Sprintf(`【思考过程】
-分析输入：「%s」
-提取产品名：「%s」
-检测风格：「%s」
-
-推理步骤：
-1. 理解需求 → 产品推广文案生成
-2. 分析产品特点 → 从输入中提取关键信息
-3. 选择文案风格 → 根据产品类型匹配
-4. 生成三段式文案 → 短/长/社交媒体
-
-风格匹配依据：
-- 产品类型 → %s风格
-- 目标受众 → 根据产品匹配`, input, product, style, style)
-
-	return &runtime.ExecutionResult{
-		Data: map[string]interface{}{
-			"short_copy":  fmt.Sprintf("终于等到%s了！🔥 %s全攻略", product, product),
-			"long_copy":   fmt.Sprintf("【%s 深度测评】\n\n最近被问爆的%s，今天来给大家详细说说。\n\n首先说外观：设计真的很有质感，拿在手里就知道了。\n\n再说功能：该有的全都有，细节处理很到位。\n\n最后说性价比：这个价位段里，绝对是值得入手的选择。\n\n总之，如果你正在考虑%s，这篇文章应该能帮你做决定。", product, product, product),
-			"social_copy": fmt.Sprintf("终于入手了%s！之前观望了好久，用了一周只想说——真香！😍 #好物分享 #值得入手", product),
-			"style":       style,
-		},
-		TokenUsage: runtime.TokenUsage{ModelName: "dev-mode"},
-		RawTrace:   trace,
-	}
-}
- 
-// extractProductName tries to extract the product/brand name from input
-func extractProductName(input string) string {
-	// Remove common prefixes
-	cleaned := input
-	prefixes := []string{"帮我写", "帮我", "写一个", "写一篇", "关于", "的推广文案", "的文案", "的笔记", "的广告", "的营销文章", "推荐", "推广"}
-	for _, p := range prefixes {
-		cleaned = strings.ReplaceAll(cleaned, p, "")
-	}
-	cleaned = strings.TrimSpace(cleaned)
-	if cleaned == "" {
-		return "这款产品"
-	}
-	// Take the first meaningful part
-	words := strings.Fields(cleaned)
-	if len(words) > 3 {
-		cleaned = strings.Join(words[:3], " ")
-	}
-	return cleaned
-}
-
-// detectStyle returns a style based on input keywords
-func detectStyle(input string) string {
-	styles := []struct {
-		keywords []string
-		style    string
-	}{
-		{[]string{"科技", "数码", "智能", "手机", "电脑", "AI", "app", "软件"}, "科技简约"},
-		{[]string{"美食", "食品", "零食", "餐厅", "菜", "吃", "喝"}, "温暖亲和"},
-		{[]string{"教育", "课程", "培训", "学习", "书"}, "专业正式"},
-		{[]string{"时尚", "穿搭", "美妆", "护肤", "衣服", "包"}, "年轻活力"},
-	}
-	lower := strings.ToLower(input)
-	for _, s := range styles {
-		for _, kw := range s.keywords {
-			if strings.Contains(lower, strings.ToLower(kw)) {
-				return s.style
-			}
-		}
-	}
-	return "温暖亲和"
-}
-
 // ──────────────────────────────────────────────
 // EmailSorterPlugin — 邮件分类
 // ──────────────────────────────────────────────
@@ -257,24 +181,24 @@ func (p *EmailSorterPlugin) Info() runtime.PluginInfo {
 
 func (p *EmailSorterPlugin) Execute(ctx context.Context, input string, opts map[string]interface{}) (*runtime.ExecutionResult, error) {
 	client, _ := opts["model_client"].(runtime.ModelClient)
-	modelName := "gemini-2.0-flash"
-
-	// Always use keyword pre-check
-	preCategory := quickSpamCheck(input)
-	if preCategory != "" {
-		return &runtime.ExecutionResult{
-			Data: map[string]interface{}{
-				"category":         preCategory,
-				"reason":           "命中垃圾关键词规则",
-				"reply_suggestion": "",
-				"urgency":          "低",
-			},
-			TokenUsage: runtime.TokenUsage{ModelName: "rule-based"},
-		}, nil
-	}
-
 	if client == nil {
-		return devClassify(input), nil
+		return nil, fmt.Errorf("email_sorter: 未配置模型 API，请在 config.yaml 中设置 model.api_key")
+	}
+	modelName := defaultModel(p.Info().ModelName)
+
+	// Spam keyword pre-check (bypasses LLM)
+	lower := strings.ToLower(input)
+	spamWords := []string{"免费", "中奖", "转账", "点击链接", "free", "winner", "bank transfer"}
+	for _, w := range spamWords {
+		if strings.Contains(lower, w) {
+			return &runtime.ExecutionResult{
+				Data: map[string]interface{}{
+					"category": "垃圾", "reason": "命中垃圾关键词规则",
+					"reply_suggestion": "", "urgency": "低",
+				},
+				TokenUsage: runtime.TokenUsage{ModelName: "rule-based"},
+			}, nil
+		}
 	}
 
 	resp, err := client.Call(ctx, runtime.ModelRequest{
@@ -283,12 +207,12 @@ func (p *EmailSorterPlugin) Execute(ctx context.Context, input string, opts map[
 		UserMessage:  input,
 	})
 	if err != nil {
-		return devClassify(input), nil
+		return nil, fmt.Errorf("email_sorter: 模型调用失败：%w", err)
 	}
 
 	var output map[string]interface{}
 	if err := json.Unmarshal([]byte(resp.Content), &output); err != nil {
-		output = devClassify(input).Data.(map[string]interface{})
+		return nil, fmt.Errorf("email_sorter: 模型输出解析失败（期望 JSON 格式）：%w", err)
 	}
 
 	return &runtime.ExecutionResult{
@@ -298,6 +222,7 @@ func (p *EmailSorterPlugin) Execute(ctx context.Context, input string, opts map[
 			OutputTokens: resp.OutputTokens,
 			ModelName:    modelName,
 		},
+		RawTrace: resp.RawResponse,
 	}, nil
 }
 
@@ -315,86 +240,6 @@ func (p *EmailSorterPlugin) Review(_ context.Context, output interface{}) (*runt
 		ShouldRetry: !passed,
 		Summary:     fmt.Sprintf("email_sorter: category=%s valid=%v", cat, passed),
 	}, nil
-}
-
-func quickSpamCheck(body string) string {
-	lower := strings.ToLower(body)
-	spamWords := []string{"免费", "中奖", "转账", "点击链接", "free", "winner"}
-	for _, w := range spamWords {
-		if strings.Contains(lower, w) {
-			return "垃圾"
-		}
-	}
-	return ""
-}
-
-func devClassify(input string) *runtime.ExecutionResult {
-	lower := strings.ToLower(input)
-	cat, urgency, reason := "咨询", "低", "常规咨询"
-	matchReason := "未命中特殊规则"
-
-	if strings.Contains(lower, "投诉") || strings.Contains(lower, "退款") || strings.Contains(lower, "赔偿") {
-		cat, urgency, reason = "投诉", "高", "检测到投诉/退款关键词"
-		matchReason = "命中投诉关键词规则"
-	} else if strings.Contains(lower, "合作") || strings.Contains(lower, "商务") || strings.Contains(lower, "partner") {
-		cat, urgency, reason = "合作", "中", "检测到合作意向"
-		matchReason = "命中合作关键词规则"
-	} else if strings.Contains(lower, "免费") || strings.Contains(lower, "中奖") || strings.Contains(lower, "转账") {
-		cat, urgency, reason = "垃圾", "低", "命中垃圾邮件规则"
-		matchReason = "命中垃圾关键词规则"
-	} else if strings.Contains(lower, "咨询") || strings.Contains(lower, "请问") || strings.Contains(lower, "help") || strings.Contains(lower, "how") {
-		cat, urgency, reason = "咨询", "中", "检测到咨询内容"
-		matchReason = "命中咨询关键词规则"
-	}
-
-	trace := fmt.Sprintf(`【思考过程】
-分析输入：「%s」
-匹配规则：%s
-
-分类决策：
-- 类别：%s
-- 紧急程度：%s
-- 理由：%s
-
-回复策略：
-%s`, input, matchReason, cat, urgency, reason,
-		mapReplyStrategy(cat))
-
-	return &runtime.ExecutionResult{
-		Data: map[string]interface{}{
-			"category": cat, "reason": reason,
-			"reply_suggestion": buildDevReply(cat, input),
-			"urgency":          urgency,
-		},
-		TokenUsage: runtime.TokenUsage{ModelName: "dev-mode"},
-		RawTrace:   trace,
-	}
-}
-
-func mapReplyStrategy(cat string) string {
-	switch cat {
-	case "投诉":
-		return "- 态度：诚恳道歉\n- 内容：说明处理流程\n- 跟进：承诺24小时联系"
-	case "合作":
-		return "- 态度：积极欢迎\n- 内容：请求更多信息\n- 跟进：表明合作意愿"
-	case "垃圾":
-		return "- 不回复（标记为垃圾邮件）"
-	default:
-		return "- 态度：专业热情\n- 内容：针对问题回复\n- 跟进：邀请进一步沟通"
-	}
-}
-
-func buildDevReply(cat, input string) string {
-	switch cat {
-	case "投诉":
-		return fmt.Sprintf("尊敬的客户，非常抱歉给您带来不便。我们已经收到您的投诉（「%s」），正在加急处理中，预计24小时内会有专人联系您。感谢您的耐心与理解。", extractProductName(input))
-	case "合作":
-		return fmt.Sprintf("您好，感谢您的合作意向！我们非常期待与您进一步沟通。关于%s，请提供以下信息以便我们更好地了解您的需求：\n1. 公司/个人简介\n2. 合作方式设想\n3. 联系方式", extractProductName(input))
-	case "咨询":
-		return fmt.Sprintf("您好，感谢您的来信。关于您咨询的问题，我们的回复如下：\n\n「%s」\n\n如有其他疑问，欢迎随时联系我们。", input)
-	default:
-		return ""
-	}
 }
 
 // ──────────────────────────────────────────────
@@ -435,11 +280,10 @@ func (p *XHSPosterPlugin) Info() runtime.PluginInfo {
 
 func (p *XHSPosterPlugin) Execute(ctx context.Context, input string, opts map[string]interface{}) (*runtime.ExecutionResult, error) {
 	client, _ := opts["model_client"].(runtime.ModelClient)
-	modelName := "gemini-2.0-flash"
-
 	if client == nil {
-		return devXHSPost(input), nil
+		return nil, fmt.Errorf("xhs_poster: 未配置模型 API，请在 config.yaml 中设置 model.api_key")
 	}
+	modelName := defaultModel(p.Info().ModelName)
 
 	memories, _ := opts["memories"].([]string)
 	var sb strings.Builder
@@ -460,12 +304,12 @@ func (p *XHSPosterPlugin) Execute(ctx context.Context, input string, opts map[st
 		UserMessage:  sb.String(),
 	})
 	if err != nil {
-		return devXHSPost(input), nil
+		return nil, fmt.Errorf("xhs_poster: 模型调用失败：%w", err)
 	}
 
 	var output map[string]interface{}
 	if err := json.Unmarshal([]byte(resp.Content), &output); err != nil {
-		output = devXHSPost(input).Data.(map[string]interface{})
+		return nil, fmt.Errorf("xhs_poster: 模型输出解析失败（期望 JSON 格式）：%w", err)
 	}
 
 	return &runtime.ExecutionResult{
@@ -475,6 +319,7 @@ func (p *XHSPosterPlugin) Execute(ctx context.Context, input string, opts map[st
 			OutputTokens: resp.OutputTokens,
 			ModelName:    modelName,
 		},
+		RawTrace: resp.RawResponse,
 	}, nil
 }
 
@@ -507,44 +352,15 @@ func (p *XHSPosterPlugin) Review(_ context.Context, output interface{}) (*runtim
 	}, nil
 }
 
-func devXHSPost(input string) *runtime.ExecutionResult {
-	product := extractProductName(input)
-
-	trace := fmt.Sprintf(`【思考过程】
-分析输入：「%s」
-提取产品名：「%s」
-
-内容策略：
-1. 标题 → emoji + 产品名 + 吸引力词汇（姐妹们/绝了）
-2. 正文 → 结构：结论→颜值→使用感→性价比→总结
-3. 标签 → #好物推荐 #种草 等 5 个热门标签
-4. 配图 → 整体+细节+场景 3 张建议
-
-风格定位：小红书种草笔记（亲切自然语气）`, input, product)
-
-	return &runtime.ExecutionResult{
-		Data: map[string]interface{}{
-			"title":            fmt.Sprintf("姐妹们！%s真的太香了💕", truncate(product, 12)),
-			"body":             fmt.Sprintf("姐妹们！今天来给大家安利一下%s！\n\n先说结论：真的值得入！✨\n\n🌟 颜值：包装设计就很高级，拿在手里质感满满\n🌟 使用感：第一次用就被惊艳到了，细节做得很好\n🌟 性价比：在同价位里绝对是天花板级别的\n\n有条件的姐妹一定要试试！保证不后悔！💯\n\n#好物分享 #真实测评 #值得入手", product),
-			"hashtags":         []string{"#好物推荐", "#种草", "#真实测评", "#值得入手", "#我的好物清单"},
-			"image_suggestions": []string{"产品整体展示图", "使用效果实拍图", "产品细节特写"},
-			"style":            "好物推荐",
-		},
-		TokenUsage: runtime.TokenUsage{ModelName: "dev-mode"},
-		RawTrace:   trace,
-	}
-}
-
 // ──────────────────────────────────────────────
 // Helpers
 // ──────────────────────────────────────────────
 
-func truncate(s string, n int) string {
-	runes := []rune(s)
-	if len(runes) <= n {
-		return s
+func defaultModel(m string) string {
+	if m != "" {
+		return m
 	}
-	return string(runes[:n])
+	return "gpt-4o"
 }
 
 func scoreFromChecks(checks []runtime.CheckResult) float32 {

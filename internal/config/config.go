@@ -13,12 +13,32 @@ type AppConfig struct {
 }
 
 type ModelConfig struct {
-	Provider    string  `yaml:"provider"`
-	Name        string  `yaml:"name"`
+	Provider    string  `yaml:"provider"`    // openai | deepseek | qwen | kimi | claude | gemini
+	Name        string  `yaml:"name"`        // 模型名（如 gpt-4o, deepseek-chat, qwen-turbo, claude-3.5-sonnet）
 	Temperature float32 `yaml:"temperature"`
 	MaxTokens   int     `yaml:"max_tokens"`
-	APIBaseURL  string  `yaml:"api_base_url"`  // 兼容 OpenAI API 格式的地址
-	APIKey      string  `yaml:"api_key"`       // API 密钥
+	APIBaseURL  string  `yaml:"api_base_url"` // 留空自动根据 provider 填充
+	APIKey      string  `yaml:"api_key"`
+}
+
+// ProviderDefaults 返回已知 provider 的默认 API 地址
+func ProviderDefaults(provider string) string {
+	switch provider {
+	case "openai":
+		return "https://api.openai.com"
+	case "deepseek":
+		return "https://api.deepseek.com"
+	case "qwen":
+		return "https://dashscope.aliyuncs.com/compatible-mode"
+	case "kimi":
+		return "https://api.moonshot.cn"
+	case "claude":
+		return "https://api.anthropic.com"
+	case "gemini":
+		return "https://generativelanguage.googleapis.com"
+	default:
+		return ""
+	}
 }
 
 type RuntimeConfig struct {

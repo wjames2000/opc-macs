@@ -2,13 +2,24 @@ app:
   name: "opc-agent"
   version: "0.1.0"
 
+# 模型配置 — 支持多 provider
+# 可用 provider: openai, deepseek, qwen, kimi, claude, gemini
+# api_base_url 留空时自动使用 provider 默认地址
+#
+# 示例：
+#   provider: openai     name: gpt-4o              # OpenAI GPT-4o
+#   provider: deepseek   name: deepseek-chat        # DeepSeek V3
+#   provider: qwen       name: qwen-turbo           # 通义千问
+#   provider: kimi       name: moonshot-v1-8k       # Kimi
+#   provider: claude     name: claude-3-5-sonnet    # Claude
+#   provider: gemini     name: gemini-2.0-flash     # Gemini
 model:
-  provider: "gemini"
-  name: "gemini-2.0-flash"
+  provider: "deepseek"
+  name: "deepseek-chat"
   temperature: 0.3
   max_tokens: 4096
-  api_base_url: ""                     # OpenAI API 兼容地址，留空=开发模式
-  api_key: ""                          # API 密钥
+  api_base_url: ""    # 留空自动使用 provider 默认地址
+  api_key: ""         # 必填，无 API Key 时系统无法运行
 
 runtime:
   plugins_dir: "./build/plugins"

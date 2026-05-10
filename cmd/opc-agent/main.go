@@ -73,20 +73,11 @@ func main() {
 	hitlHandler := hitl.NewHandler(os.Stdin, os.Stdout)
 
 	// 初始化模型客户端
-	modelClient := agent.NewDefaultModelClient(cfg.Model.APIBaseURL, cfg.Model.APIKey)
-	if cfg.Model.APIBaseURL == "" {
-		fmt.Println("┌──────────────────────────────────────────────────────┐")
-		fmt.Println("│ ⚠️  当前为开发模式 — 输出为模拟内容，质量有限       │")
-		fmt.Println("│                                                     │")
-		fmt.Println("│ 配置 config.yaml 中的模型参数以获得真实 AI 输出：    │")
-		fmt.Println("│   model.api_base_url: https://api.openai.com        │")
-		fmt.Println("│   model.api_key: sk-your-key-here                   │")
-		fmt.Println("│                                                     │")
-		fmt.Println("│ 支持 OpenAI 兼容 API 格式的任意模型服务             │")
-		fmt.Println("└──────────────────────────────────────────────────────┘")
-	} else {
-		fmt.Printf("[系统] 模型 API：%s （模型：%s）\n", cfg.Model.APIBaseURL, cfg.Model.Name)
+	modelClient, err := agent.NewModelClient(cfg.Model.Provider, cfg.Model.APIBaseURL, cfg.Model.APIKey)
+	if err != nil {
+		log.Fatalf("模型初始化失败：%v\n请在 config.yaml 中配置正确的 model.provider 和 model.api_key", err)
 	}
+	fmt.Printf("[系统] 模型：%s → %s (%s)\n", cfg.Model.Provider, cfg.Model.Name, cfg.Model.APIBaseURL)
 
 	// 初始化 Router
 	router := agent.NewRouter(pluginLoader, cfg.Model.Name)
@@ -200,10 +191,6 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 	}
 	fmt.Printf("[执行] 完成 (model=%s in=%d out=%d)\n",
 		modelInfo, execResult.TokenUsage.InputTokens, execResult.TokenUsage.OutputTokens)
-
-	if modelInfo == "dev-mode" {
-		fmt.Println("[提示] 当前输出为模拟内容。配置 model.api_base_url 可获取真实 AI 生成结果")
-	}
 
 	// 输出 Agent 思考过程
 	if execResult.RawTrace != "" {

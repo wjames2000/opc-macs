@@ -12,44 +12,54 @@ import (
 	"github.com/wjames2000/opc-macs/internal/runtime"
 )
 
-// NewDefaultModelClient creates a model client for the configured API endpoint.
-// If baseURL is empty, returns a no-op client (development mode).
-func NewDefaultModelClient(baseURL, apiKey string) runtime.ModelClient {
+func NewModelClient(provider, apiBaseURL, apiKey string) (runtime.ModelClient, error) {
+	baseURL := apiBaseURL
 	if baseURL == "" {
-		return &noopClient{}
+		switch provider {
+		case "openai":
+			baseURL = "https://api.openai.com"
+		case "deepseek":
+			baseURL = "https://api.deepseek.com"
+		case "qwen":
+			baseURL = "https://dashscope.aliyuncs.com/compatible-mode"
+		case "kimi":
+			baseURL = "https://api.moonshot.cn"
+		case "claude":
+			baseURL = "https://api.anthropic.com"
+		case "gemini":
+			baseURL = "https://generativelanguage.googleapis.com"
+		default:
+			return nil, fmt.Errorf("未知 provider '%s'，请在 config.yaml 中设置 model.api_base_url", provider)
+		}
 	}
 	return &httpClient{
-		baseURL: baseURL,
-		apiKey:  apiKey,
-		client:  &http.Client{Timeout: 30 * time.Second},
-	}
-}
-
-type noopClient struct{}
-
-func (c *noopClient) Call(ctx context.Context, req runtime.ModelRequest) (*runtime.ModelResponse, error) {
-	return nil, fmt.Errorf("dev mode: no API configured, set model.api_base_url in config.yaml")
+		baseURL:  baseURL,
+		apiKey:   apiKey,
+		provider: provider,
+		client:   &http.Client{Timeout: 60 * time.Second},
+	}, nil
 }
 
 type httpClient struct {
-	baseURL string
-	apiKey  string
-	client  *http.Client
+	baseURL  string
+	apiKey   string
+	provider string
+	client   *http.Client
 }
 
-type chatMessage struct {
+type openAIMsg struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
 }
 
-type chatRequest struct {
-	Model       string        `json:"model"`
-	Messages    []chatMessage `json:"messages"`
-	Temperature float32       `json:"temperature"`
-	MaxTokens   int           `json:"max_tokens"`
+type openAIReq struct {
+	Model       string      `json:"model"`
+	Messages    []openAIMsg `json:"messages"`
+	Temperature float32     `json:"temperature"`
+	MaxTokens   int         `json:"max_tokens"`
 }
 
-type chatResponse struct {
+type openAIResp struct {
 	Choices []struct {
 		Message struct {
 			Content string `json:"content"`
@@ -61,70 +71,121 @@ type chatResponse struct {
 	} `json:"usage"`
 }
 
+type claudeMsg struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+type claudeReq struct {
+	Model       string      `json:"model"`
+	System      string      `json:"system,omitempty"`
+	MaxTokens   int         `json:"max_tokens"`
+	Temperature float32     `json:"temperature"`
+	Messages    []claudeMsg `json:"messages"`
+}
+
+type claudeResp struct {
+	Content []struct {
+		Text string `json:"text"`
+	} `json:"content"`
+	Usage struct {
+		InputTokens  int `json:"input_tokens"`
+		OutputTokens int `json:"output_tokens"`
+	} `json:"usage"`
+}
+
 func (c *httpClient) Call(ctx context.Context, req runtime.ModelRequest) (*runtime.ModelResponse, error) {
-	chatReq := chatRequest{
+	if c.apiKey == "" {
+		return nil, fmt.Errorf("API Key 未配置：请在 config.yaml 中设置 model.api_key")
+	}
+	if req.Model == "" {
+		req.Model = "deepseek-chat"
+	}
+	if c.provider == "claude" {
+		return c.callClaude(ctx, req)
+	}
+	return c.callOpenAI(ctx, req)
+}
+
+func (c *httpClient) callOpenAI(ctx context.Context, req runtime.ModelRequest) (*runtime.ModelResponse, error) {
+	chatReq := openAIReq{
 		Model: req.Model,
-		Messages: []chatMessage{
+		Messages: []openAIMsg{
 			{Role: "system", Content: req.SystemPrompt},
 			{Role: "user", Content: req.UserMessage},
 		},
 		Temperature: 0.3,
 		MaxTokens:   4096,
 	}
+	body, _ := json.Marshal(chatReq)
 
-	body, err := json.Marshal(chatReq)
-	if err != nil {
-		return nil, fmt.Errorf("model: marshal request: %w", err)
-	}
-
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", c.baseURL+"/v1/chat/completions", bytes.NewReader(body))
-	if err != nil {
-		return nil, fmt.Errorf("model: create request: %w", err)
-	}
+	url := c.baseURL + "/v1/chat/completions"
+	httpReq, _ := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(body))
 	httpReq.Header.Set("Content-Type", "application/json")
-	if c.apiKey != "" {
-		httpReq.Header.Set("Authorization", "Bearer "+c.apiKey)
-	}
+	httpReq.Header.Set("Authorization", "Bearer "+c.apiKey)
 
 	resp, err := c.client.Do(httpReq)
 	if err != nil {
-		return nil, fmt.Errorf("model: http call failed: %w", err)
+		return nil, fmt.Errorf("[%s] 连接失败：%w", c.provider, err)
 	}
 	defer resp.Body.Close()
 
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("model: read response: %w", err)
-	}
-
+	respBody, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("model: API error %d: %s", resp.StatusCode, string(respBody))
+		return nil, fmt.Errorf("[%s] HTTP %d：%s", c.provider, resp.StatusCode, string(respBody))
 	}
 
-	// Save raw response for thinking trace
-	rawStr := string(respBody)
-
-	var chatResp chatResponse
-	if err := json.Unmarshal(respBody, &chatResp); err != nil {
-		return nil, fmt.Errorf("model: parse response: %w", err)
-	}
-
+	var chatResp openAIResp
+	json.Unmarshal(respBody, &chatResp)
 	if len(chatResp.Choices) == 0 {
-		return nil, fmt.Errorf("model: no choices in response")
+		return nil, fmt.Errorf("[%s] 返回空结果", c.provider)
 	}
 
 	return &runtime.ModelResponse{
 		Content:      chatResp.Choices[0].Message.Content,
 		InputTokens:  chatResp.Usage.PromptTokens,
 		OutputTokens: chatResp.Usage.CompletionTokens,
-		RawResponse:  rawStr,
+		RawResponse:  string(respBody),
 	}, nil
 }
 
-func truncateStr(s string, n int) string {
-	runes := []rune(s)
-	if len(runes) <= n {
-		return s
+func (c *httpClient) callClaude(ctx context.Context, req runtime.ModelRequest) (*runtime.ModelResponse, error) {
+	claudeReqData := claudeReq{
+		Model:       req.Model,
+		System:      req.SystemPrompt,
+		MaxTokens:   4096,
+		Temperature: 0.3,
+		Messages:    []claudeMsg{{Role: "user", Content: req.UserMessage}},
 	}
-	return string(runes[:n])
+	body, _ := json.Marshal(claudeReqData)
+
+	url := c.baseURL + "/v1/messages"
+	httpReq, _ := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("x-api-key", c.apiKey)
+	httpReq.Header.Set("anthropic-version", "2023-06-01")
+
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("[claude] 连接失败：%w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("[claude] HTTP %d：%s", resp.StatusCode, string(respBody))
+	}
+
+	var claudeRespData claudeResp
+	json.Unmarshal(respBody, &claudeRespData)
+	if len(claudeRespData.Content) == 0 {
+		return nil, fmt.Errorf("[claude] 返回空内容")
+	}
+
+	return &runtime.ModelResponse{
+		Content:      claudeRespData.Content[0].Text,
+		InputTokens:  claudeRespData.Usage.InputTokens,
+		OutputTokens: claudeRespData.Usage.OutputTokens,
+		RawResponse:  string(respBody),
+	}, nil
 }
