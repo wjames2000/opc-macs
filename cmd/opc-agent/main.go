@@ -102,6 +102,9 @@ func main() {
 	printHelp()
 
 	scanner := bufio.NewScanner(os.Stdin)
+	session := agent.NewSession(50)
+	hasHistory := false
+
 	for {
 		fmt.Print("\n> ")
 		if !scanner.Scan() {
@@ -126,8 +129,27 @@ func main() {
 			printStats(memoryStore)
 			continue
 		}
+		if input == "new" || input == "reset" {
+			session.Reset()
+			hasHistory = false
+			fmt.Println("[会话] 已重置，开始新的对话")
+			continue
+		}
+		if input == "history" {
+			fmt.Println(session.FormatHistory(50))
+			continue
+		}
 
-		processTask(context.Background(), input, pluginLoader, router, reviewer, memoryStore, hitlHandler, modelClient, embedder, cfg)
+		if hasHistory {
+			history := session.FormatHistory(5)
+			_ = history
+		}
+
+		taskInput := input
+		resultStr, routeName := processTask(context.Background(), input, pluginLoader, router, reviewer, memoryStore, hitlHandler, modelClient, embedder, cfg, session)
+
+		session.AddTurn(taskInput, routeName, resultStr)
+		_ = hasHistory
 	}
 
 	fmt.Println("\n再见！")
@@ -136,7 +158,8 @@ func main() {
 func processTask(ctx context.Context, input string, loader *runtime.Loader,
 	router *agent.Router, reviewer *agent.Reviewer,
 	store memory.MemoryStore, hitlHandler *hitl.Handler,
-	modelClient runtime.ModelClient, embedder memory.Embedder, cfg *config.Config) {
+	modelClient runtime.ModelClient, embedder memory.Embedder,
+	cfg *config.Config, session *agent.Session) (resultStr string, routeName string) {
 
 	startTime := time.Now()
 	fmt.Printf("\n[任务] 处理中：%s\n", input)
@@ -149,11 +172,11 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 	routeResult, err := router.Route(taskCtx, input)
 	if err != nil {
 		fmt.Printf("[错误] 路由失败：%v\n", err)
-		return
+		return "", ""
 	}
 	if routeResult.Action == agent.RouteActionUnknown {
 		fmt.Printf("%s\n", routeResult.Message)
-		return
+		return "", ""
 	}
 
 	// 当使用 @agent_name 明确指定时，使用 @ 后面的内容作为任务输入
@@ -167,6 +190,10 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 		fmt.Printf("[任务] 任务描述：%s\n", taskInput)
 	}
 
+	// 注入会话历史到 opts
+	history := session.FormatHistory(5)
+	_ = history
+
 	// 2. 检索记忆
 	memories, _ := store.Recall(taskCtx, taskInput, cfg.Memory.TopK)
 	if len(memories) > 0 {
@@ -178,11 +205,12 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 		"memories":      memories,
 		"model_client":  modelClient,
 		"model_name":    cfg.Model.Name,
+		"history":       session.FormatHistory(5),
 	}
 	execResult, err := routeResult.Plugin.Execute(taskCtx, taskInput, opts)
 	if err != nil {
 		fmt.Printf("[错误] Agent 执行失败：%v\n", err)
-		return
+		return "", ""
 	}
 	modelInfo := execResult.TokenUsage.ModelName
 	if modelInfo == "" {
@@ -271,9 +299,12 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 
 	// 7. 输出结果
 	elapsed := time.Since(startTime)
+	resultStr = fmt.Sprintf("%+v", execResult.Data)
 	fmt.Printf("\n══════════ 输出结果 (%.2fs) ══════════\n", elapsed.Seconds())
-	fmt.Printf("%+v\n", execResult.Data)
+	fmt.Println(resultStr)
 	fmt.Printf("══════════════════════════════════════\n")
+
+	return
 }
 
 func printHelp() {
@@ -283,6 +314,8 @@ func printHelp() {
 	fmt.Println("  <自然语言>          由 Router 自动识别意图并分发")
 	fmt.Println("  plugins             查看已加载的 Agent 插件")
 	fmt.Println("  stats               查看系统统计信息")
+	fmt.Println("  new                 开始新会话（清空上下文）")
+	fmt.Println("  history             查看当前会话历史")
 	fmt.Println("  help                显示帮助")
 	fmt.Println("  exit                退出")
 }
