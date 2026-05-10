@@ -142,15 +142,61 @@ func (p *CopywriterPlugin) Review(_ context.Context, output interface{}) (*runti
 }
 
 func devCopywrite(input string) *runtime.ExecutionResult {
+	// Intelligent dev mode: generate context-aware output from keywords in input
+	product := extractProductName(input)
+	style := detectStyle(input)
+
 	return &runtime.ExecutionResult{
 		Data: map[string]interface{}{
-			"short_copy":  fmt.Sprintf("「%s」懂你所需，品质之选", truncate(input, 8)),
-			"long_copy":   fmt.Sprintf("在寻找一款真正懂你的产品吗？%s\n\n我们用心打磨每一个细节，只为给你最好的体验。品质之选，值得信赖。", input),
-			"social_copy": fmt.Sprintf("被问爆了！%s 真的绝绝子✨", truncate(input, 10)),
-			"style":       "科技简约",
+			"short_copy":  fmt.Sprintf("终于等到%s了！🔥 %s全攻略", product, product),
+			"long_copy":   fmt.Sprintf("【%s 深度测评】\n\n最近被问爆的%s，今天来给大家详细说说。\n\n首先说外观：设计真的很有质感，拿在手里就知道了。\n\n再说功能：该有的全都有，细节处理很到位。\n\n最后说性价比：这个价位段里，绝对是值得入手的选择。\n\n总之，如果你正在考虑%s，这篇文章应该能帮你做决定。", product, product, product),
+			"social_copy": fmt.Sprintf("终于入手了%s！之前观望了好久，用了一周只想说——真香！😍 #好物分享 #值得入手", product),
+			"style":       style,
 		},
 		TokenUsage: runtime.TokenUsage{ModelName: "dev-mode"},
 	}
+}
+
+// extractProductName tries to extract the product/brand name from input
+func extractProductName(input string) string {
+	// Remove common prefixes
+	cleaned := input
+	prefixes := []string{"帮我写", "帮我", "写一个", "写一篇", "关于", "的推广文案", "的文案", "的笔记", "的广告", "的营销文章", "推荐", "推广"}
+	for _, p := range prefixes {
+		cleaned = strings.ReplaceAll(cleaned, p, "")
+	}
+	cleaned = strings.TrimSpace(cleaned)
+	if cleaned == "" {
+		return "这款产品"
+	}
+	// Take the first meaningful part
+	words := strings.Fields(cleaned)
+	if len(words) > 3 {
+		cleaned = strings.Join(words[:3], " ")
+	}
+	return cleaned
+}
+
+// detectStyle returns a style based on input keywords
+func detectStyle(input string) string {
+	styles := []struct {
+		keywords []string
+		style    string
+	}{
+		{[]string{"科技", "数码", "智能", "手机", "电脑", "AI", "app", "软件"}, "科技简约"},
+		{[]string{"美食", "食品", "零食", "餐厅", "菜", "吃", "喝"}, "温暖亲和"},
+		{[]string{"教育", "课程", "培训", "学习", "书"}, "专业正式"},
+		{[]string{"时尚", "穿搭", "美妆", "护肤", "衣服", "包"}, "年轻活力"},
+	}
+	lower := strings.ToLower(input)
+	for _, s := range styles {
+		for _, kw := range s.keywords {
+			if strings.Contains(lower, strings.ToLower(kw)) {
+				return s.style
+			}
+		}
+	}
+	return "温暖亲和"
 }
 
 // ──────────────────────────────────────────────
@@ -268,16 +314,35 @@ func quickSpamCheck(body string) string {
 
 func devClassify(input string) *runtime.ExecutionResult {
 	lower := strings.ToLower(input)
-	cat, urgency := "咨询", "低"
-	if strings.Contains(lower, "投诉") || strings.Contains(lower, "退款") {
-		cat, urgency = "投诉", "高"
-	} else if strings.Contains(lower, "合作") {
-		cat, urgency = "合作", "中"
+	cat, urgency, reason := "咨询", "低", "常规咨询"
+
+	if strings.Contains(lower, "投诉") || strings.Contains(lower, "退款") || strings.Contains(lower, "赔偿") {
+		cat, urgency, reason = "投诉", "高", "检测到投诉/退款关键词"
+	} else if strings.Contains(lower, "合作") || strings.Contains(lower, "商务") || strings.Contains(lower, "partner") {
+		cat, urgency, reason = "合作", "中", "检测到合作意向"
+	} else if strings.Contains(lower, "免费") || strings.Contains(lower, "中奖") || strings.Contains(lower, "转账") {
+		cat, urgency, reason = "垃圾", "低", "命中垃圾邮件规则"
+	} else if strings.Contains(lower, "咨询") || strings.Contains(lower, "请问") || strings.Contains(lower, "help") || strings.Contains(lower, "how") {
+		cat, urgency, reason = "咨询", "中", "检测到咨询内容"
 	}
+
+	reply := ""
+	switch cat {
+	case "投诉":
+		reply = fmt.Sprintf("尊敬的客户，\n\n非常抱歉给您带来不便。我们已经收到您的投诉（「%s」），正在加急处理中，预计24小时内会有专人联系您。\n\n感谢您的耐心与理解。", extractProductName(input))
+	case "合作":
+		reply = fmt.Sprintf("您好，\n\n感谢您的合作意向！我们非常期待与您进一步沟通。\n\n请提供以下信息以便我们更好地了解您的需求：\n1. 公司/个人简介\n2. 合作方式设想\n3. 联系方式", extractProductName(input))
+	case "咨询":
+		reply = fmt.Sprintf("您好，\n\n感谢您的来信。关于您咨询的问题，我们的回复如下：\n\n「%s」\n\n如有其他疑问，欢迎随时联系我们。", input)
+	case "垃圾":
+		reply = ""
+	}
+
 	return &runtime.ExecutionResult{
 		Data: map[string]interface{}{
-			"category": cat, "reason": fmt.Sprintf("关键词匹配归类为%s", cat),
-			"reply_suggestion": fmt.Sprintf("您好，关于「%s」的问题，我们会尽快处理。", truncate(input, 20)),
+			"category":         cat,
+			"reason":           reason,
+			"reply_suggestion": reply,
 			"urgency":          urgency,
 		},
 		TokenUsage: runtime.TokenUsage{ModelName: "dev-mode"},
@@ -395,12 +460,13 @@ func (p *XHSPosterPlugin) Review(_ context.Context, output interface{}) (*runtim
 }
 
 func devXHSPost(input string) *runtime.ExecutionResult {
+	product := extractProductName(input)
 	return &runtime.ExecutionResult{
 		Data: map[string]interface{}{
-			"title":            fmt.Sprintf("被问爆了！%s 真的绝了✨", truncate(input, 10)),
-			"body":             fmt.Sprintf("姐妹们！今天一定要给你们安利这个%s\n\n真的被惊艳到了😍 品质超级棒，细节处理也很到位。\n\n推荐指数：⭐⭐⭐⭐⭐", input),
-			"hashtags":         []string{"#好物推荐", "#种草", "#测评", "#值得入手", "#生活好物"},
-			"image_suggestions": []string{"产品整体展示图", "细节特写图"},
+			"title":            fmt.Sprintf("姐妹们！%s真的太香了💕", truncate(product, 12)),
+			"body":             fmt.Sprintf("姐妹们！今天来给大家安利一下%s！\n\n先说结论：真的值得入！✨\n\n🌟 颜值：包装设计就很高级，拿在手里质感满满\n🌟 使用感：第一次用就被惊艳到了，细节做得很好\n🌟 性价比：在同价位里绝对是天花板级别的\n\n有条件的姐妹一定要试试！保证不后悔！💯\n\n#好物分享 #真实测评 #值得入手", product),
+			"hashtags":         []string{"#好物推荐", "#种草", "#真实测评", "#值得入手", "#我的好物清单"},
+			"image_suggestions": []string{"产品整体展示图", "使用效果实拍图", "产品细节特写"},
 			"style":            "好物推荐",
 		},
 		TokenUsage: runtime.TokenUsage{ModelName: "dev-mode"},

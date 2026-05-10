@@ -75,8 +75,15 @@ func main() {
 	// 初始化模型客户端
 	modelClient := agent.NewDefaultModelClient(cfg.Model.APIBaseURL, cfg.Model.APIKey)
 	if cfg.Model.APIBaseURL == "" {
-		fmt.Println("[系统] 模型 API：未配置（开发模式，输出为模拟内容）")
-		fmt.Println("[系统] 在 config.yaml 中设置 model.api_base_url 可接入真实模型")
+		fmt.Println("┌──────────────────────────────────────────────────────┐")
+		fmt.Println("│ ⚠️  当前为开发模式 — 输出为模拟内容，质量有限       │")
+		fmt.Println("│                                                     │")
+		fmt.Println("│ 配置 config.yaml 中的模型参数以获得真实 AI 输出：    │")
+		fmt.Println("│   model.api_base_url: https://api.openai.com        │")
+		fmt.Println("│   model.api_key: sk-your-key-here                   │")
+		fmt.Println("│                                                     │")
+		fmt.Println("│ 支持 OpenAI 兼容 API 格式的任意模型服务             │")
+		fmt.Println("└──────────────────────────────────────────────────────┘")
 	} else {
 		fmt.Printf("[系统] 模型 API：%s （模型：%s）\n", cfg.Model.APIBaseURL, cfg.Model.Name)
 	}
@@ -193,6 +200,10 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 	}
 	fmt.Printf("[执行] 完成 (model=%s in=%d out=%d)\n",
 		modelInfo, execResult.TokenUsage.InputTokens, execResult.TokenUsage.OutputTokens)
+
+	if modelInfo == "dev-mode" {
+		fmt.Println("[提示] 当前输出为模拟内容。配置 model.api_base_url 可获取真实 AI 生成结果")
+	}
 
 	// 4. Reviewer 审查
 	reviewResult, _ := reviewer.Review(taskCtx, execResult.Data,

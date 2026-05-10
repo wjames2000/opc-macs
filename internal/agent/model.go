@@ -28,12 +28,7 @@ func NewDefaultModelClient(baseURL, apiKey string) runtime.ModelClient {
 type noopClient struct{}
 
 func (c *noopClient) Call(ctx context.Context, req runtime.ModelRequest) (*runtime.ModelResponse, error) {
-	// Development mode: return realistic mock responses with model info
-	return &runtime.ModelResponse{
-		Content:      fmt.Sprintf("[%s] 开发者模式：SystemPrompt=%s, UserMessage=%s", req.Model, truncateStr(req.SystemPrompt, 50), req.UserMessage),
-		InputTokens:  0,
-		OutputTokens: 0,
-	}, nil
+	return nil, fmt.Errorf("dev mode: no API configured, set model.api_base_url in config.yaml")
 }
 
 type httpClient struct {
