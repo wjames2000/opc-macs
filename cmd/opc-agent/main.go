@@ -174,8 +174,9 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 
 	// 3. 调用插件 Execute
 	opts := map[string]interface{}{
-		"memories":     memories,
-		"model_client": modelClient,
+		"memories":      memories,
+		"model_client":  modelClient,
+		"model_name":    cfg.Model.Name,
 	}
 	execResult, err := routeResult.Plugin.Execute(taskCtx, taskInput, opts)
 	if err != nil {

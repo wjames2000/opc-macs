@@ -64,7 +64,7 @@ func (p *CopywriterPlugin) Execute(ctx context.Context, input string, opts map[s
 	if client == nil {
 		return nil, fmt.Errorf("copywriter: 未配置模型 API，请在 config.yaml 中设置 model.api_key")
 	}
-	modelName := defaultModel(p.Info().ModelName)
+	modelName := resolveModelName(opts, p.Info().ModelName)
 
 	memories, _ := opts["memories"].([]string)
 	var sb strings.Builder
@@ -184,7 +184,7 @@ func (p *EmailSorterPlugin) Execute(ctx context.Context, input string, opts map[
 	if client == nil {
 		return nil, fmt.Errorf("email_sorter: 未配置模型 API，请在 config.yaml 中设置 model.api_key")
 	}
-	modelName := defaultModel(p.Info().ModelName)
+	modelName := resolveModelName(opts, p.Info().ModelName)
 
 	// Spam keyword pre-check (bypasses LLM)
 	lower := strings.ToLower(input)
@@ -283,7 +283,7 @@ func (p *XHSPosterPlugin) Execute(ctx context.Context, input string, opts map[st
 	if client == nil {
 		return nil, fmt.Errorf("xhs_poster: 未配置模型 API，请在 config.yaml 中设置 model.api_key")
 	}
-	modelName := defaultModel(p.Info().ModelName)
+	modelName := resolveModelName(opts, p.Info().ModelName)
 
 	memories, _ := opts["memories"].([]string)
 	var sb strings.Builder
@@ -356,11 +356,15 @@ func (p *XHSPosterPlugin) Review(_ context.Context, output interface{}) (*runtim
 // Helpers
 // ──────────────────────────────────────────────
 
-func defaultModel(m string) string {
-	if m != "" {
+func resolveModelName(opts map[string]interface{}, pluginModel string) string {
+	// Priority: opts from config > plugin-specific override > default
+	if m, ok := opts["model_name"].(string); ok && m != "" {
 		return m
 	}
-	return "gpt-4o"
+	if pluginModel != "" {
+		return pluginModel
+	}
+	return "deepseek-v4-flash"
 }
 
 func scoreFromChecks(checks []runtime.CheckResult) float32 {
