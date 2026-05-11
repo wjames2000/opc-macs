@@ -90,12 +90,26 @@ func main() {
 	}
 	fmt.Printf("[系统] 模型：%s → %s (%s)\n", cfg.Model.Provider, cfg.Model.Name, cfg.Model.APIBaseURL)
 
-	// 初始化记忆引擎（带真实 embedding）
+	// 初始化记忆引擎（根据配置选择存储后端）
+	var memoryStore memory.MemoryStore
 	embedder := memory.NewModelClientEmbedder(modelClient, cfg.Model.Name)
-	memoryStore, err := memory.NewEmbeddedEngineWithEmbedder(cfg.Memory.StorePath, embedder)
-	if err != nil {
-		log.Printf("[警告] 记忆引擎初始化失败：%v，使用空引擎降级运行", err)
-		memoryStore = memory.NewEmptyEngine()
+
+	if cfg.Memory.Engine == "pgvector" && cfg.Memory.PGConnStr != "" {
+		ps, err := memory.NewPGVectorStore(cfg.Memory.PGConnStr)
+		if err != nil {
+			log.Fatalf("PGVector 初始化失败：%v", err)
+		}
+		memoryStore = ps
+		fmt.Println("[系统] 记忆引擎：PostgreSQL + pgvector")
+	} else {
+		es, err := memory.NewEmbeddedEngineWithEmbedder(cfg.Memory.StorePath, embedder)
+		if err != nil {
+			log.Printf("[警告] 嵌入式记忆引擎初始化失败：%v，使用空引擎降级运行", err)
+			memoryStore = memory.NewEmptyEngine()
+		} else {
+			memoryStore = es
+		}
+		fmt.Println("[系统] 记忆引擎：嵌入式文件存储")
 	}
 	defer memoryStore.Close()
 
