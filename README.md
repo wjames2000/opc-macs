@@ -40,8 +40,8 @@ docker compose up -d
 | copywriter | `#文案` `@copywriter` | deepseek-v4-flash | ✅ | 三段式营销文案生成 |
 | email_sorter | `#邮件` `@email_sorter` | gemini-2.0-flash | ✅ | 邮件分类+回复建议 |
 | xhs_poster | `#小红书` `@xhs_poster` | deepseek-v4-flash | ✅ | 小红书种草笔记 |
-| competitive_analysis | `#竞品` `@competitive` | deepseek-v4-flash | ❌ | SWOT 竞品分析 |
-| meeting_minutes | `#会议` `@meeting` | deepseek-v4-flash | ❌ | 会议纪要整理 |
+| competitive_analysis | `#竞品` `@competitive` | deepseek-v4-flash | ✅ | SWOT 竞品分析 |
+| meeting_minutes | `#会议` `@meeting` | deepseek-v4-flash | ✅ | 会议纪要整理 |
 
 ## 使用方法
 

@@ -22,7 +22,7 @@ build-plugins:
 
 run: build-main build-plugins
 	@echo "Starting OPC-Agent..."
-	cd $(BUILD_DIR) && ./opc-agent --config=../config.yaml
+	cd $(BUILD_DIR) && ./opc-agent --config=../config.dev.yaml
 
 test:
 	$(GO) test ./internal/... -v -count=1 -short
