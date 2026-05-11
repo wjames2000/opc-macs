@@ -324,6 +324,8 @@ select.form-input { cursor: pointer; }
             </div>
           </div>
           <div style="flex:1;overflow-y:auto;padding:8px">
+            <!-- Today -->
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);padding:8px 12px 4px;text-transform:uppercase">今天</div>
             <div class="conversation-item active" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px;background:#F1F5F9" onclick="selectConversation(this)">
               <div style="display:flex;justify-content:space-between;margin-bottom:4px">
                 <span style="font-weight:600;font-size:13px">杭州可人酒店推广</span>
@@ -348,18 +350,7 @@ select.form-input { cursor: pointer; }
             </div>
             <div class="conversation-item" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px" onclick="selectConversation(this)">
               <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-                <span style="font-weight:600;font-size:13px">竞品分析报告</span>
-                <span style="font-size:11px;color:var(--text-disabled)">32m ago</span>
-              </div>
-              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">分析我们的主要竞争对手</div>
-              <div style="display:flex;gap:4px;margin-top:6px">
-                <span class="tag tag-purple">competitive</span>
-                <span style="font-size:11px;color:var(--text-disabled)">4,500 tokens</span>
-              </div>
-            </div>
-            <div class="conversation-item" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px" onclick="selectConversation(this)">
-              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-                <span style="font-weight:600;font-size:13px">智能水杯种草笔记</span>
+                <span style="font-weight:600;font-size:13px">智能水杯小红书笔记</span>
                 <span style="font-size:11px;color:var(--text-disabled)">1h ago</span>
               </div>
               <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">帮我写一篇小红书笔记推广智能水杯</div>
@@ -370,19 +361,116 @@ select.form-input { cursor: pointer; }
             </div>
             <div class="conversation-item" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px" onclick="selectConversation(this)">
               <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-                <span style="font-weight:600;font-size:13px">产品评审会议</span>
+                <span style="font-weight:600;font-size:13px">竞品分析报告</span>
+                <span style="font-size:11px;color:var(--text-disabled)">1h ago</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">分析我们的主要竞争对手</div>
+              <div style="display:flex;gap:4px;margin-top:6px">
+                <span class="tag tag-purple">competitive</span>
+                <span style="font-size:11px;color:var(--text-disabled)">4,500 tokens</span>
+              </div>
+            </div>
+            <div class="conversation-item" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px" onclick="selectConversation(this)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-weight:600;font-size:13px">产品评审会议纪要</span>
                 <span style="font-size:11px;color:var(--text-disabled)">2h ago</span>
               </div>
-              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">本周产品评审会纪要</div>
+              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">本周产品评审会纪要整理</div>
               <div style="display:flex;gap:4px;margin-top:6px">
                 <span class="tag tag-red">meeting</span>
                 <span style="font-size:11px;color:var(--text-disabled)">2,800 tokens</span>
               </div>
             </div>
+
+            <!-- Yesterday -->
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);padding:12px 12px 4px;text-transform:uppercase">昨天</div>
+            <div class="conversation-item" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px" onclick="selectConversation(this)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-weight:600;font-size:13px">会员日促销文案</span>
+                <span style="font-size:11px;color:var(--text-disabled)">昨天 14:23</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">写一个618促销活动的推广文案</div>
+              <div style="display:flex;gap:4px;margin-top:6px">
+                <span class="tag tag-blue">copywriter</span>
+                <span style="font-size:11px;color:var(--text-disabled)">3,200 tokens</span>
+              </div>
+            </div>
+            <div class="conversation-item" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px" onclick="selectConversation(this)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-weight:600;font-size:13px">新客户咨询回复</span>
+                <span style="font-size:11px;color:var(--text-disabled)">昨天 10:05</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">回复客户关于产品价格的咨询</div>
+              <div style="display:flex;gap:4px;margin-top:6px">
+                <span class="tag tag-yellow">email_sorter</span>
+                <span style="font-size:11px;color:var(--text-disabled)">560 tokens</span>
+              </div>
+            </div>
+
+            <!-- Earlier -->
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);padding:12px 12px 4px;text-transform:uppercase">2026-05-09</div>
+            <div class="conversation-item" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px" onclick="selectConversation(this)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-weight:600;font-size:13px">新品发布会文案</span>
+                <span style="font-size:11px;color:var(--text-disabled)">16:30</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">撰写智能水杯新品发布会的宣传文案</div>
+              <div style="display:flex;gap:4px;margin-top:6px">
+                <span class="tag tag-blue">copywriter</span>
+                <span style="font-size:11px;color:var(--text-disabled)">2,800 tokens</span>
+              </div>
+            </div>
+            <div class="conversation-item" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px" onclick="selectConversation(this)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-weight:600;font-size:13px">竞品功能对比</span>
+                <span style="font-size:11px;color:var(--text-disabled)">14:00</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">对比分析三家竞品的功能差异</div>
+              <div style="display:flex;gap:4px;margin-top:6px">
+                <span class="tag tag-purple">competitive</span>
+                <span style="font-size:11px;color:var(--text-disabled)">5,100 tokens</span>
+              </div>
+            </div>
+            <div class="conversation-item" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px" onclick="selectConversation(this)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-weight:600;font-size:13px">护手霜小红书推广</span>
+                <span style="font-size:11px;color:var(--text-disabled)">11:20</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">写一篇护手霜的小红书种草笔记</div>
+              <div style="display:flex;gap:4px;margin-top:6px">
+                <span class="tag tag-green">xhs_poster</span>
+                <span style="font-size:11px;color:var(--text-disabled)">1,800 tokens</span>
+              </div>
+            </div>
+
+            <!-- Older -->
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);padding:12px 12px 4px;text-transform:uppercase">2026-05-08</div>
+            <div class="conversation-item" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px" onclick="selectConversation(this)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-weight:600;font-size:13px">退款投诉处理</span>
+                <span style="font-size:11px;color:var(--text-disabled)">09:15</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">客户要求退款，需要处理投诉</div>
+              <div style="display:flex;gap:4px;margin-top:6px">
+                <span class="tag tag-yellow">email_sorter</span>
+                <span style="font-size:11px;color:var(--text-disabled)">420 tokens</span>
+              </div>
+            </div>
+            <div class="conversation-item" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px" onclick="selectConversation(this)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-weight:600;font-size:13px">季度产品路线图</span>
+                <span style="font-size:11px;color:var(--text-disabled)">15:45</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">整理季度产品规划会议纪要</div>
+              <div style="display:flex;gap:4px;margin-top:6px">
+                <span class="tag tag-red">meeting</span>
+                <span style="font-size:11px;color:var(--text-disabled)">3,600 tokens</span>
+              </div>
+            </div>
           </div>
           <div style="padding:12px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--text-secondary);display:flex;justify-content:space-between">
             <span>📋 共 12 个对话</span>
-            <span>📥 导出全部</span>
+            <span style="cursor:pointer" onclick="showToast('已导出全部对话')">📥 导出全部</span>
           </div>
         </div>
 
@@ -414,7 +502,10 @@ select.form-input { cursor: pointer; }
               <div style="width:32px;height:32px;border-radius:50%;background:#E0F2FE;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🤖</div>
               <div style="max-width:70%">
                 <div style="padding:12px 16px;border-radius:12px;background:var(--card);border:1px solid var(--border);font-size:14px;line-height:1.6">您好！我是文案生成助手。请告诉我您需要推广的产品或服务信息，我会为您生成三段式营销文案。</div>
-                <div style="font-size:11px;color:var(--text-disabled);margin-top:4px">10:28 AM · 120 tokens</div>
+                <div style="font-size:11px;color:var(--text-disabled);margin-top:4px;display:flex;justify-content:space-between;align-items:center">
+                  <span>10:28 AM · 120 tokens</span>
+                  <button class="btn-ghost" style="font-size:12px;padding:2px 6px" onclick="copyAsMarkdown(this,'copywriter','您好！我是文案生成助手...')">📋 复制</button>
+                </div>
               </div>
             </div>
             <div style="display:flex;gap:12px;margin-bottom:20px;flex-direction:row-reverse">
@@ -438,7 +529,10 @@ select.form-input { cursor: pointer; }
                   <div style="font-size:12px;color:var(--secondary);cursor:pointer;margin-top:8px;user-select:none" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.nextElementSibling.classList.contains('show')?'🔍 收起思考过程 ▴':'🔍 查看思考过程 ▾'">🔍 查看思考过程 ▾</div>
                   <div style="display:none;margin-top:8px;padding:12px;background:#F1F5F9;border-radius:6px;font-size:12px;color:var(--text-secondary);line-height:1.6"><strong>推理步骤：</strong><br>1. 分析输入<br>2. 提取卖点<br>3. 选择风格<br>4. 生成三段文案</div>
                 </div>
-                <div style="font-size:11px;color:var(--text-disabled);margin-top:4px">10:32 AM · 1,250 tokens · deepseek-v4-flash</div>
+                <div style="font-size:11px;color:var(--text-disabled);margin-top:4px;display:flex;justify-content:space-between;align-items:center">
+                  <span>10:32 AM · 1,250 tokens · deepseek-v4-flash</span>
+                  <button class="btn-ghost" style="font-size:12px;padding:2px 6px" onclick="copyAsMarkdown(this,'copywriter','**📝 短文案**\n西湖边的隐世桃源——杭州可人酒店\n\n**📄 长文案**\n在西湖畔醒来，推窗即景。杭州可人酒店...\n\n**📱 社交媒体文案**\n终于住到了心心念念的杭州可人酒店！')">📋 复制</button>
+                </div>
               </div>
             </div>
           </div>
@@ -774,6 +868,23 @@ function switchUsageTab(el,view) {
 function selectConversation(el) {
   document.querySelectorAll('.conversation-item').forEach(c=>c.style.background='transparent');
   el.style.background='var(--bg)';
+}
+
+// ===== Copy as Markdown =====
+function copyAsMarkdown(btn, agent, content) {
+  const timestamp = new Date().toLocaleString('zh-CN', { hour12: false });
+  const md = `**${agent}** · ${timestamp}\n\n${content}\n\n---`;
+  navigator.clipboard.writeText(md).then(() => {
+    showToast('已复制为 Markdown 格式');
+    btn.textContent = '✅ 已复制';
+    setTimeout(() => { btn.textContent = '📋 复制'; }, 2000);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = md; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('已复制');
+  });
 }
 
 // ===== Slide Panel =====
