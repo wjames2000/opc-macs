@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -221,6 +222,13 @@ func main() {
 		}
 
 		taskInput := input
+
+		// Pipeline: stage1 | stage2 | stage3
+		if idx := findPipeSeparator(input); idx >= 0 {
+			runPipeline(input, pluginLoader, router, reviewer, memoryStore, hitlHandler, modelClient, embedder, cfg, session, tokenTracker, resultCache)
+			continue
+		}
+
 		resultStr, routeName := processTask(context.Background(), input, pluginLoader, router, reviewer, memoryStore, hitlHandler, modelClient, embedder, cfg, session, tokenTracker, resultCache)
 
 		session.AddTurn(taskInput, routeName, resultStr)
@@ -228,6 +236,79 @@ func main() {
 	}
 
 	fmt.Println("\n再见！")
+}
+
+// findPipeSeparator finds | that is used as a pipeline separator
+// It looks for | surrounded by spaces (to avoid matching URL pipes etc.)
+func findPipeSeparator(input string) int {
+	for i := 0; i < len(input); i++ {
+		if input[i] == '|' {
+			// Check it's a standalone pipe (spaces around it)
+			hasBefore := i > 0 && input[i-1] == ' '
+			hasAfter := i+1 < len(input) && input[i+1] == ' '
+			if hasBefore || hasAfter {
+				return i
+			}
+		}
+	}
+	return -1
+}
+
+// runPipeline handles A2A pipeline: agent1 task | agent2
+func runPipeline(input string, loader *runtime.Loader,
+	router *agent.Router, reviewer *agent.Reviewer,
+	store memory.MemoryStore, hitlHandler *hitl.Handler,
+	modelClient runtime.ModelClient, embedder memory.Embedder,
+	cfg *config.Config, session *agent.Session,
+	tracker *agent.TokenTracker, cache *agent.ResultCache) {
+
+	// Split on |
+	parts := splitPipeline(input)
+	if len(parts) < 2 {
+		fmt.Println("[管道] 格式：@agent1 任务 | @agent2")
+		return
+	}
+
+	fmt.Printf("\n══════════ A2A 管道：%d 个阶段 ══════════\n", len(parts))
+
+	var previousOutput string
+	for i, part := range parts {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+
+		// Append previous stage output as context
+		taskInput := part
+		if previousOutput != "" {
+			taskInput = part + "\n\n[上游输出]\n" + previousOutput
+		}
+
+		fmt.Printf("\n--- 阶段 %d/%d: %s ---\n", i+1, len(parts), part)
+		resultStr, _ := processTask(context.Background(), taskInput, loader, router, reviewer,
+			store, hitlHandler, modelClient, embedder, cfg, session, tracker, cache)
+		previousOutput = resultStr
+	}
+
+	fmt.Printf("\n══════════ A2A 管道完成 ══════════\n")
+}
+
+// splitPipeline splits input by | but preserves quoted sections
+func splitPipeline(input string) []string {
+	var parts []string
+	var current strings.Builder
+	for i := 0; i < len(input); i++ {
+		if input[i] == '|' && (i == 0 || input[i-1] == ' ') && (i+1 == len(input) || input[i+1] == ' ') {
+			parts = append(parts, current.String())
+			current.Reset()
+		} else {
+			current.WriteByte(input[i])
+		}
+	}
+	if current.Len() > 0 {
+		parts = append(parts, current.String())
+	}
+	return parts
 }
 
 func processTask(ctx context.Context, input string, loader *runtime.Loader,
@@ -431,6 +512,9 @@ func printHelp() {
 	fmt.Println("  history             查看当前会话历史")
 	fmt.Println("  reload              重新加载配置（模型/API 等）")
 	fmt.Println("  help                显示帮助")
+	fmt.Println("")
+	fmt.Println("A2A 管道：")
+	fmt.Println("  @a 任务 | @b        将 Agent A 的结果传给 Agent B 处理")
 	fmt.Println("  exit                退出")
 }
 
