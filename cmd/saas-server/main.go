@@ -53,6 +53,9 @@ func main() {
 	mux.HandleFunc("/api/v1/auth/login", srv.HandleLogin)
 	mux.HandleFunc("/api/v1/agents", srv.HandleListAgents)
 	mux.HandleFunc("/api/v1/tenants", srv.HandleListTenants)
+	mux.HandleFunc("/api/v1/usage/record", srv.HandleRecordUsage)
+	mux.HandleFunc("/api/v1/usage/summary", srv.HandleUsageSummary)
+	mux.HandleFunc("/api/v1/agents/execute", srv.HandleExecuteAgent)
 
 	// Wrap with CORS
 	handler := corsMiddleware(mux)
