@@ -119,6 +119,11 @@ cd web && npm install && npm run dev
 │   ├── saas/                # 多租户 SaaS 后端
 │   └── workflow/            # 工作流编排引擎
 ├── plugins/                 # Agent 插件源码 (.so)
+│   ├── copywriter/           # 文案生成
+│   ├── email_sorter/         # 邮件分类
+│   ├── xhs_poster/           # 小红书内容
+│   ├── competitive_analysis/ # 竞品分析
+│   └── meeting_minutes/      # 会议纪要
 ├── workflows/               # 工作流定义 YAML
 ├── web/                     # React Web UI (Vite+Tailwind)
 ├── docs/                    # 设计文档 + 高保真原型
