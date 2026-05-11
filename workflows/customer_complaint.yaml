@@ -1,0 +1,20 @@
+name: 客户投诉自动处理
+description: 自动分类投诉邮件并生成回复
+version: "1.0"
+trigger: manual
+steps:
+  - id: classify
+    agent: email_sorter
+    input: "${trigger.input}"
+    output: classify_result
+
+  - id: analyze
+    agent: competitive_analysis
+    input: "分析以下投诉的严重程度：${classify_result.output.reply_suggestion}"
+    output: analyze_result
+
+  - id: reply
+    agent: copywriter
+    input: "投诉内容：${trigger.input}\n分类：${classify_result.output.category}\n请生成一封专业的回复邮件。"
+    output: reply_result
+    condition: "${classify_result.output.urgency} != ''"

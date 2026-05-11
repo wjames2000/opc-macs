@@ -20,6 +20,7 @@ import (
 	"github.com/wjames2000/opc-macs/internal/memory"
 	"github.com/wjames2000/opc-macs/internal/plugins"
 	"github.com/wjames2000/opc-macs/internal/runtime"
+	"github.com/wjames2000/opc-macs/internal/workflow"
 )
 
 var (
@@ -123,8 +124,12 @@ func main() {
 	// 初始化 Router
 	router := agent.NewRouter(pluginLoader, cfg.Model.Name, modelClient)
 
-	// 初始化 Reviewer
+	// 初始化 Reviewers
 	reviewer := agent.NewReviewer(cfg.Model.Name, modelClient)
+
+	// 初始化工作流引擎
+	wfEngine := workflow.NewEngine(pluginLoader, modelClient)
+	wfSessions := make(map[string]*workflow.Session)
 
 	// 信号处理
 	sigCh := make(chan os.Signal, 1)
@@ -187,6 +192,29 @@ func main() {
 		}
 		if input == "history" {
 			fmt.Println(session.FormatHistory(50))
+			continue
+		}
+		if input == "workflows" || input == "wf" {
+			printWorkflows(wfEngine, wfSessions)
+			continue
+		}
+		if strings.HasPrefix(input, "run ") {
+			parts := strings.SplitN(input, " ", 2)
+			if len(parts) == 2 {
+				handleRunWorkflow(context.Background(), parts[1], wfEngine, wfSessions,
+					pluginLoader, router, reviewer, memoryStore, hitlHandler, modelClient, embedder, cfg, session, tokenTracker, resultCache)
+			}
+			continue
+		}
+		if strings.HasPrefix(input, "wf status ") || strings.HasPrefix(input, "workflow status ") {
+			parts := strings.Fields(input)
+			if len(parts) == 3 {
+				if s, ok := wfSessions[parts[2]]; ok {
+					fmt.Println(s.FormatStatus())
+				} else {
+					fmt.Printf("未找到工作流会话: %s\n", parts[2])
+				}
+			}
 			continue
 		}
 		if input == "reload" {
@@ -511,10 +539,18 @@ func printHelp() {
 	fmt.Println("  new                 开始新会话（清空上下文）")
 	fmt.Println("  history             查看当前会话历史")
 	fmt.Println("  reload              重新加载配置（模型/API 等）")
+	fmt.Println("  workflows/wf        列出可用工作流")
+	fmt.Println("  run <name> <输入>   执行工作流")
+	fmt.Println("  wf status <id>      查看工作流状态")
 	fmt.Println("  help                显示帮助")
 	fmt.Println("")
 	fmt.Println("A2A 管道：")
 	fmt.Println("  @a 任务 | @b        将 Agent A 的结果传给 Agent B 处理")
+	fmt.Println("")
+	fmt.Println("工作流：")
+	fmt.Println("  workflows           查看可用工作流列表")
+	fmt.Println("  run <name> <输入>   执行一个工作流")
+	fmt.Println("  wf status <id>      查看工作流执行状态")
 	fmt.Println("  exit                退出")
 }
 
@@ -549,4 +585,63 @@ func extractKeyDecisions(data interface{}) []string {
 		return keys
 	}
 	return nil
+}
+
+func printWorkflows(engine *workflow.Engine, sessions map[string]*workflow.Session) {
+	// 扫描 workflows/ 目录
+	entries, err := os.ReadDir("workflows")
+	if err != nil {
+		fmt.Println("[工作流] 无 workflows 目录，请创建工作流 YAML 文件")
+		return
+	}
+	fmt.Println("\n📋 可用工作流：")
+	for _, e := range entries {
+		if !e.IsDir() && (strings.HasSuffix(e.Name(), ".yaml") || strings.HasSuffix(e.Name(), ".yml")) {
+			fmt.Printf("  - %s\n", strings.TrimSuffix(e.Name(), ".yaml"))
+		}
+	}
+	fmt.Println("\n  使用 run <name> <输入> 执行工作流")
+}
+
+func handleRunWorkflow(ctx context.Context, arg string, engine *workflow.Engine,
+	sessions map[string]*workflow.Session,
+	loader *runtime.Loader, router *agent.Router, reviewer *agent.Reviewer,
+	store memory.MemoryStore, hitlHandler *hitl.Handler,
+	modelClient runtime.ModelClient, embedder memory.Embedder,
+	cfg *config.Config, session *agent.Session,
+	tracker *agent.TokenTracker, cache *agent.ResultCache) {
+
+	parts := strings.SplitN(arg, " ", 2)
+	wfName := parts[0]
+	input := ""
+	if len(parts) > 1 {
+		input = parts[1]
+	}
+
+	// 从文件加载工作流
+	data, err := os.ReadFile("workflows/" + wfName + ".yaml")
+	if err != nil {
+		// 尝试 .yml
+		data, err = os.ReadFile("workflows/" + wfName + ".yml")
+		if err != nil {
+			fmt.Printf("[工作流] 未找到工作流 '%s'\n", wfName)
+			return
+		}
+	}
+
+	wf, err := workflow.ParseYAML(data)
+	if err != nil {
+		fmt.Printf("[工作流] 解析失败：%v\n", err)
+		return
+	}
+
+	fmt.Printf("[工作流] 开始执行：%s\n", wf.Name)
+	result, err := engine.Run(ctx, wf, input)
+	if err != nil {
+		fmt.Printf("[工作流] 执行失败：%v\n", err)
+	}
+	fmt.Println(result.FormatOutput())
+
+	// 保存会话
+	sessions[result.ID] = result
 }
