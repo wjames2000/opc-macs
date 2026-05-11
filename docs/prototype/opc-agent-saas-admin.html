@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OPC-Agent · SaaS Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #1E3A5F; --primary-light: #2D5A8E; --secondary: #0891B2;
+  --accent: #F59E0B; --success: #10B981; --danger: #EF4444;
+  --bg: #F0F2F5; --card: #FFFFFF; --border: #E2E8F0;
+  --text: #1E293B; --text-secondary: #64748B; --text-disabled: #94A3B8;
+  --radius: 12px; --radius-sm: 8px; --sidebar-width: 260px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; display: flex; min-height: 100vh; }
+.sidebar {
+  width: var(--sidebar-width); background: #0F172A; color: white;
+  display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+}
+.sidebar-brand { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.sidebar-brand h1 { font-size: 16px; font-weight: 700; }
+.sidebar-brand span { font-size: 11px; color: var(--secondary); opacity: 0.8; }
+.sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+.nav-section { padding: 8px 20px 4px; font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 20px; margin: 1px 8px; border-radius: 6px; color: rgba(255,255,255,0.6); cursor: pointer; transition: all 0.15s; font-size: 13px; }
+.nav-item:hover { background: rgba(255,255,255,0.08); color: white; }
+.nav-item.active { background: var(--primary); color: white; }
+.sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 11px; color: rgba(255,255,255,0.3); }
+.main { margin-left: var(--sidebar-width); flex: 1; }
+.topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 12px 32px; display: flex; align-items: center; justify-content: space-between; }
+.content { padding: 24px 32px; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* Cards */
+.card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px; }
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+.stat { padding: 16px; }
+.stat .value { font-size: 24px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+.stat .label { color: var(--text-secondary); font-size: 12px; margin-top: 4px; }
+.stat .trend { font-size: 11px; margin-top: 6px; }
+
+/* Table */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th { text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
+.data-table td { padding: 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
+.data-table tr:hover td { background: #F8FAFC; }
+.tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+.tag-green { background: #D1FAE5; color: #065F46; }
+.tag-red { background: #FEE2E2; color: #991B1B; }
+.tag-blue { background: #DBEAFE; color: #1E40AF; }
+.tag-yellow { background: #FEF3C7; color: #92400E; }
+.tag-purple { background: #F3E8FF; color: #6B21A8; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-light); }
+.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn-outline:hover { background: var(--bg); }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+.form-input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; width: 100%; }
+.form-input:focus { border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(8,145,178,0.1); }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: none; }
+.modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--card); border-radius: var(--radius); box-shadow: 0 20px 60px rgba(0,0,0,0.2); z-index: 300; width: 520px; max-width: 90vw; display: none; }
+.modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { font-size: 16px; font-weight: 600; }
+.modal-body { padding: 24px; max-height: 60vh; overflow-y: auto; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+
+/* Mini bar */
+.mini-bar { height: 6px; border-radius: 3px; background: #E2E8F0; overflow: hidden; }
+.mini-bar-fill { height: 100%; border-radius: 3px; }
+
+/* Usage gauge */
+.gauge { width: 100%; height: 8px; border-radius: 4px; background: #E2E8F0; overflow: hidden; margin: 8px 0; }
+.gauge-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+
+@media (max-width:1024px) {
+  .stats-row { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-brand"><h1>OPC-Agent</h1><span>SaaS Admin Console</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">概览</div>
+    <div class="nav-item active" onclick="navigate('dashboard')"><span>📊</span> 总览</div>
+    <div class="nav-section">租户管理</div>
+    <div class="nav-item" onclick="navigate('tenants')"><span>🏢</span> 租户列表</div>
+    <div class="nav-item" onclick="navigate('plans')"><span>💎</span> 套餐管理</div>
+    <div class="nav-section">运营监控</div>
+    <div class="nav-item" onclick="navigate('usage')"><span>📈</span> 用量监控</div>
+    <div class="nav-item" onclick="navigate('api-keys')"><span>🔑</span> API Key 管理</div>
+    <div class="nav-section">系统</div>
+    <div class="nav-item" onclick="navigate('settings')"><span>⚙️</span> 系统设置</div>
+  </nav>
+  <div class="sidebar-footer">v0.1.0 · 42 个租户 · 在线</div>
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    <h2 style="font-size:16px;font-weight:600" id="pageTitle">总览</h2>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="tag tag-green">● 系统正常</span>
+      <span style="font-size:12px;color:var(--text-secondary)">admin@opc-agent.com</span>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- Dashboard -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-row">
+        <div class="card stat"><div class="value">42</div><div class="label">活跃租户</div><div class="trend" style="color:var(--success)">↑ 3 本周新增</div></div>
+        <div class="card stat"><div class="value">2.4M</div><div class="label">今日 Token</div><div class="trend" style="color:var(--success)">↑ 12%</div></div>
+        <div class="card stat"><div class="value">$48.20</div><div class="label">今日收入</div><div class="trend" style="color:var(--success)">↑ 8%</div></div>
+        <div class="card stat"><div class="value">99.2%</div><div class="label">API 可用率</div><div class="trend" style="color:var(--success)">正常</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
+        <div class="card">
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:16px">租户增长趋势 (近 30 天)</h3>
+          <div style="height:160px;display:flex;align-items:flex-end;gap:3px">
+            <script>document.write([12,15,13,18,20,17,22,25,23,28,30,27,32,35,33,38,40,37,42,45,43,48,50,47,52,55,58,60,62,65].map(v=>`<div style="flex:1;height:${v/65*140}px;background:linear-gradient(to top,var(--primary),#60A5FA);border-radius:3px 3px 0 0;min-height:4px"></div>`).join(''));</script>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:12px">套餐分布</h3>
+          <div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Free</span><span>28 个</span></div><div class="mini-bar"><div class="mini-bar-fill" style="width:67%;background:#94A3B8"></div></div></div>
+          <div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Pro</span><span>10 个</span></div><div class="mini-bar"><div class="mini-bar-fill" style="width:24%;background:var(--secondary)"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Enterprise</span><span>4 个</span></div><div class="mini-bar"><div class="mini-bar-fill" style="width:9%;background:var(--accent)"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tenants -->
+    <div class="page" id="page-tenants">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <h3 style="font-size:16px;font-weight:600">租户列表</h3>
+        <div style="display:flex;gap:8px">
+          <input class="form-input" style="width:200px" placeholder="搜索租户...">
+          <button class="btn btn-primary">+ 创建租户</button>
+        </div>
+      </div>
+      <div class="card" style="padding:0">
+        <table class="data-table">
+          <thead><tr><th>租户</th><th>Slug</th><th>套餐</th><th>用户数</th><th>本月 Token</th><th>本月费用</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Acme Corp</strong></td><td>acme</td><td><span class="tag tag-blue">Enterprise</span></td><td>12</td><td style="font-family:monospace">845,200</td><td style="font-family:monospace">$42.30</td><td><span class="tag tag-green">● 活跃</span></td><td><button class="btn btn-sm btn-outline">管理</button></td></tr>
+            <tr><td><strong>TechStart Inc</strong></td><td>techstart</td><td><span class="tag tag-purple">Pro</span></td><td>5</td><td style="font-family:monospace">342,000</td><td style="font-family:monospace">$18.50</td><td><span class="tag tag-green">● 活跃</span></td><td><button class="btn btn-sm btn-outline">管理</button></td></tr>
+            <tr><td><strong>独立开发者小王</strong></td><td>wangdev</td><td><span class="tag tag-yellow">Free</span></td><td>1</td><td style="font-family:monospace">45,200</td><td style="font-family:monospace">$0.00</td><td><span class="tag tag-green">● 活跃</span></td><td><button class="btn btn-sm btn-outline">管理</button></td></tr>
+            <tr><td><strong>GlobalSoft</strong></td><td>gsoft</td><td><span class="tag tag-blue">Enterprise</span></td><td>25</td><td style="font-family:monospace">1,245,000</td><td style="font-family:monospace">$68.20</td><td><span class="tag tag-green">● 活跃</span></td><td><button class="btn btn-sm btn-outline">管理</button></td></tr>
+            <tr><td><strong>Freelancer Zhang</strong></td><td>zhangdev</td><td><span class="tag tag-yellow">Free</span></td><td>1</td><td style="font-family:monospace">89,500</td><td style="font-family:monospace">$0.00</td><td><span class="tag tag-red">🔴 超额</span></td><td><button class="btn btn-sm btn-outline">管理</button></td></tr>
+            <tr><td><strong>DataPulse</strong></td><td>datapulse</td><td><span class="tag tag-purple">Pro</span></td><td>3</td><td style="font-family:monospace">678,000</td><td style="font-family:monospace">$32.10</td><td><span class="tag tag-green">● 活跃</span></td><td><button class="btn btn-sm btn-outline">管理</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Plans -->
+    <div class="page" id="page-plans">
+      <div style="display:flex;justify-content:space-between;margin-bottom:20px">
+        <h3 style="font-size:16px;font-weight:600">套餐管理</h3>
+        <button class="btn btn-primary">+ 新增套餐</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+        <div class="card" style="text-align:center;padding:32px 24px">
+          <div style="font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px">Free</div>
+          <div style="font-size:36px;font-weight:700;margin:16px 0">¥<span style="font-size:48px">0</span></div>
+          <div style="font-size:12px;color:var(--text-secondary)">适合个人试用</div>
+          <div style="margin:20px 0;text-align:left;font-size:13px;line-height:2">
+            <div>✅ 10 万 Token/月</div>
+            <div>✅ 3 个 Agent</div>
+            <div>✅ 1 个用户</div>
+            <div>✅ 2 个工作流</div>
+            <div>❌ 超额按量</div>
+            <div>❌ 技术支持</div>
+          </div>
+          <div style="color:var(--text-secondary);font-size:12px">当前 28 个租户使用</div>
+        </div>
+        <div class="card" style="text-align:center;padding:32px 24px;border-color:var(--secondary);position:relative">
+          <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--secondary);color:white;padding:2px 12px;border-radius:10px;font-size:11px;font-weight:600">最受欢迎</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px">Pro</div>
+          <div style="font-size:36px;font-weight:700;margin:16px 0">¥<span style="font-size:48px">99</span><span style="font-size:14px;color:var(--text-secondary)">/月</span></div>
+          <div style="font-size:12px;color:var(--text-secondary)">适合小型团队</div>
+          <div style="margin:20px 0;text-align:left;font-size:13px;line-height:2">
+            <div>✅ 100 万 Token/月</div>
+            <div>✅ 10 个 Agent</div>
+            <div>✅ 5 个用户</div>
+            <div>✅ 20 个工作流</div>
+            <div>✅ 超额 ¥0.008/千 tokens</div>
+            <div>✅ 邮件支持</div>
+          </div>
+          <div style="color:var(--text-secondary);font-size:12px">当前 10 个租户使用</div>
+        </div>
+        <div class="card" style="text-align:center;padding:32px 24px">
+          <div style="font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px">Enterprise</div>
+          <div style="font-size:36px;font-weight:700;margin:16px 0">¥<span style="font-size:48px">499</span><span style="font-size:14px;color:var(--text-secondary)">/月</span></div>
+          <div style="font-size:12px;color:var(--text-secondary)">适合企业</div>
+          <div style="margin:20px 0;text-align:left;font-size:13px;line-height:2">
+            <div>✅ 1000 万 Token/月</div>
+            <div>✅ 不限 Agent</div>
+            <div>✅ 不限用户</div>
+            <div>✅ 不限工作流</div>
+            <div>✅ 超额 ¥0.005/千 tokens</div>
+            <div>✅ 专属技术支持</div>
+          </div>
+          <div style="color:var(--text-secondary);font-size:12px">当前 4 个租户使用</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Usage Monitoring -->
+    <div class="page" id="page-usage">
+      <h3 style="font-size:16px;font-weight:600;margin-bottom:20px">📈 用量监控</h3>
+      <div class="stats-row">
+        <div class="card stat"><div class="value">2,450,800</div><div class="label">总 Token (今日)</div></div>
+        <div class="card stat"><div class="value">$48.20</div><div class="label">总费用 (今日)</div></div>
+        <div class="card stat"><div class="value">12,450</div><div class="label">API 调用 (今日)</div></div>
+        <div class="card stat"><div class="value">42ms</div><div class="label">平均响应</div></div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:12px">按模型用量排行</h3>
+        <table class="data-table">
+          <thead><tr><th>模型</th><th>Provider</th><th>调用次数</th><th>输入 Token</th><th>输出 Token</th><th>费用</th><th>占比</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag tag-blue">deepseek-v4-flash</span></td><td>DeepSeek</td><td>8,450</td><td style="font-family:monospace">1,245,000</td><td style="font-family:monospace">890,000</td><td style="font-family:monospace">$28.40</td><td><div class="mini-bar" style="width:100px"><div class="mini-bar-fill" style="width:58%;background:var(--secondary)"></div></div></td></tr>
+            <tr><td><span class="tag tag-yellow">gemini-2.0-flash</span></td><td>Google</td><td>2,800</td><td style="font-family:monospace">450,000</td><td style="font-family:monospace">320,000</td><td style="font-family:monospace">$12.80</td><td><div class="mini-bar" style="width:100px"><div class="mini-bar-fill" style="width:22%;background:var(--accent)"></div></div></td></tr>
+            <tr><td><span class="tag tag-green">gpt-4o-mini</span></td><td>OpenAI</td><td>1,200</td><td style="font-family:monospace">210,000</td><td style="font-family:monospace">145,000</td><td style="font-family:monospace">$7.00</td><td><div class="mini-bar" style="width:100px"><div class="mini-bar-fill" style="width:10%;background:var(--success)"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- API Keys -->
+    <div class="page" id="page-api-keys">
+      <div style="display:flex;justify-content:space-between;margin-bottom:20px">
+        <h3 style="font-size:16px;font-weight:600">🔑 API Key 管理</h3>
+        <button class="btn btn-primary">+ 生成 Key</button>
+      </div>
+      <div class="card" style="padding:0">
+        <table class="data-table">
+          <thead><tr><th>名称</th><th>Key</th><th>租户</th><th>权限</th><th>状态</th><th>最后使用</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td>Production</td><td style="font-family:monospace;font-size:12px">tk_prod_x8j2k...a1b2c</td><td>Acme Corp</td><td>读写</td><td><span class="tag tag-green">● 活跃</span></td><td>2 分钟前</td><td><button class="btn btn-sm btn-outline" style="color:var(--danger)">吊销</button></td></tr>
+            <tr><td>Development</td><td style="font-family:monospace;font-size:12px">tk_dev_m3n4p...d5e6f</td><td>TechStart</td><td>只读</td><td><span class="tag tag-green">● 活跃</span></td><td>15 分钟前</td><td><button class="btn btn-sm btn-outline" style="color:var(--danger)">吊销</button></td></tr>
+            <tr><td>CI/CD</td><td style="font-family:monospace;font-size:12px">tk_ci_r7s8t...g9h0i</td><td>GlobalSoft</td><td>读写</td><td><span class="tag tag-red">🔴 已吊销</span></td><td>3 天前</td><td><button class="btn btn-sm btn-outline">恢复</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="page" id="page-settings">
+      <h3 style="font-size:16px;font-weight:600;margin-bottom:20px">⚙️ 系统设置</h3>
+      <div class="card">
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:16px">平台配置</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div><label style="font-size:12px;font-weight:500;display:block;margin-bottom:4px">平台名称</label><input class="form-input" value="OPC-Agent"></div>
+          <div><label style="font-size:12px;font-weight:500;display:block;margin-bottom:4px">默认套餐</label><select class="form-input"><option>Free</option><option>Pro</option><option>Enterprise</option></select></div>
+          <div><label style="font-size:12px;font-weight:500;display:block;margin-bottom:4px">默认 Token 限额</label><input class="form-input" value="100000"></div>
+          <div><label style="font-size:12px;font-weight:500;display:block;margin-bottom:4px">超量费率 (¥/千tokens)</label><input class="form-input" value="0.008"></div>
+        </div>
+        <div style="margin-top:16px"><button class="btn btn-primary">💾 保存</button></div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:16px">公告</h3>
+        <textarea class="form-input" rows="3" placeholder="输入系统公告内容，将推送给所有租户..."></textarea>
+        <div style="margin-top:8px"><button class="btn btn-primary">📢 发布公告</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const titles={dashboard:'总览',tenants:'租户列表',plans:'套餐管理',usage:'用量监控','api-keys':'API Key 管理',settings:'系统设置'};
+  const idx={dashboard:1,tenants:3,plans:4,usage:6,'api-keys':7,settings:9};
+  document.querySelectorAll('.nav-item')[idx[page]].classList.add('active');
+  document.getElementById('pageTitle').textContent=titles[page];
+}
+</script>
+</body>
+</html>

@@ -203,6 +203,7 @@ select.form-input { cursor: pointer; }
     <div class="nav-item" onclick="navigate('chat')"><span class="icon">💬</span> 对话</div>
     <div class="nav-item" onclick="navigate('agents')"><span class="icon">🤖</span> Agent 管理</div>
     <div class="nav-item" onclick="navigate('usage')"><span class="icon">📈</span> 用量统计</div>
+    <div class="nav-item" onclick="navigate('billing')"><span class="icon">💎</span> 套餐与账单</div>
     <div class="nav-item" onclick="navigate('settings')"><span class="icon">⚙️</span> 系统设置</div>
   </nav>
   <div class="sidebar-footer">v0.1.0 · 5 Agents · Uptime: 3d 12h</div>
@@ -246,6 +247,7 @@ select.form-input { cursor: pointer; }
     </div>
     <div class="topbar-right">
       <div class="status-badge"><span class="status-dot"></span>系统正常</div>
+      <span style="font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:4px">🏢 <select style="border:none;font-size:12px;background:transparent;color:var(--text-secondary);cursor:pointer"><option>Acme Corp (Pro)</option><option>个人项目 (Free)</option></select></span>
       <div class="avatar">A</div>
     </div>
   </header>
@@ -733,6 +735,33 @@ select.form-input { cursor: pointer; }
       </div>
     </div>
 
+    <!-- ====== Billing ====== -->
+    <div class="page" id="page-billing">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div><h3 style="font-size:16px;font-weight:600">💎 套餐与账单</h3><p style="font-size:13px;color:var(--text-secondary)">当前套餐: Pro · 续费日期: 2026-06-11</p></div>
+        <button class="btn btn-primary" onclick="showToast('升级页面已打开')">⬆️ 升级套餐</button>
+      </div>
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="card stat-card"><div class="value" style="font-size:22px">845,200</div><div class="label">本月已用 Token</div><div class="trend trend-up">↑ 12% 较上月</div></div>
+        <div class="card stat-card"><div class="value" style="font-size:22px">1,000,000</div><div class="label">套餐限额</div><div class="trend trend-neutral">Pro 套餐</div></div>
+        <div class="card stat-card"><div class="value" style="font-size:22px">84.5%</div><div class="label">已用比例</div><div class="trend" style="color:var(--accent)">本月剩余 154,800</div></div>
+        <div class="card stat-card"><div class="value" style="font-size:22px">$4.52</div><div class="label">本月预估费用</div><div class="trend trend-neutral">¥99 套餐费内</div></div>
+      </div>
+      <div style="width:100%;height:8px;border-radius:4px;background:#E2E8F0;overflow:hidden;margin-bottom:20px"><div style="width:84.5%;height:100%;border-radius:4px;background:linear-gradient(to right,var(--secondary),var(--accent))"></div></div>
+      <div class="card">
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:12px">用量明细</h3>
+        <table class="data-table">
+          <thead><tr><th>Agent</th><th>调用</th><th>输入 Token</th><th>输出 Token</th><th>费用</th></tr></thead>
+          <tbody>
+            <tr><td>copywriter</td><td>156</td><td class="mono">45,200</td><td class="mono">28,300</td><td class="mono">$1.42</td></tr>
+            <tr><td>email_sorter</td><td>89</td><td class="mono">12,400</td><td class="mono">8,100</td><td class="mono">$0.41</td></tr>
+            <tr><td>xhs_poster</td><td>67</td><td class="mono">32,100</td><td class="mono">19,800</td><td class="mono">$0.99</td></tr>
+            <tr><td>competitive_analysis</td><td>23</td><td class="mono">18,500</td><td class="mono">12,400</td><td class="mono">$0.62</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- ====== Settings (Multi-Model) ====== -->
     <div class="page" id="page-settings">
       <p style="color:var(--text-secondary);font-size:13px;margin-bottom:24px">管理多个模型连接、配置系统参数和存储后端。</p>
@@ -849,9 +878,9 @@ function navigate(page) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const idx={dashboard:0,chat:1,agents:2,usage:3,settings:4};
+  const idx={dashboard:0,chat:1,agents:2,usage:3,billing:4,settings:5};
   document.querySelectorAll('.nav-item')[idx[page]].classList.add('active');
-  const titles={dashboard:'总览',chat:'对话',agents:'Agent 管理',usage:'用量统计',settings:'系统设置'};
+  const titles={dashboard:'总览',chat:'对话',agents:'Agent 管理',usage:'用量统计',billing:'套餐与账单',settings:'系统设置'};
   document.getElementById('pageTitle').textContent=titles[page];
   document.getElementById('sidebar').classList.remove('open');
 }
