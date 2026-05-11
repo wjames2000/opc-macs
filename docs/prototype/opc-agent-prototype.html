@@ -312,60 +312,149 @@ select.form-input { cursor: pointer; }
 
     <!-- ====== Chat ====== -->
     <div class="page" id="page-chat">
-      <div class="chat-container" style="display:flex;flex-direction:column;height:calc(100vh - 140px)">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
-          <label style="font-size:13px;font-weight:500;color:var(--text-secondary)">Agent:</label>
-          <select class="form-input" style="width:auto;padding:6px 24px 6px 12px">
-            <option>copywriter · 文案生成</option>
-            <option>email_sorter · 邮件分类</option>
-            <option>xhs_poster · 小红书内容</option>
-            <option>competitive_analysis · 竞品分析</option>
-            <option>meeting_minutes · 会议纪要</option>
-          </select>
-          <span class="tag tag-green">● 在线</span>
-          <span style="font-size:12px;color:var(--text-secondary);margin-left:auto">Model: deepseek-v4-flash · Token: 1,250</span>
-        </div>
-        <div style="flex:1;overflow-y:auto;padding-right:8px">
-          <div style="display:flex;gap:12px;margin-bottom:20px;flex-direction:row">
-            <div style="width:32px;height:32px;border-radius:50%;background:#E0F2FE;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🤖</div>
-            <div style="max-width:70%">
-              <div style="padding:12px 16px;border-radius:12px;background:var(--card);border:1px solid var(--border);font-size:14px;line-height:1.6">您好！我是文案生成助手。请告诉我您需要推广的产品或服务信息。</div>
-              <div style="font-size:11px;color:var(--text-disabled);margin-top:4px">10:28 AM · 120 tokens</div>
+      <div style="display:flex;height:calc(100vh - 140px);gap:0;margin:-24px -32px;overflow:hidden">
+
+        <!-- Conversation Sidebar -->
+        <div style="width:300px;border-right:1px solid var(--border);background:var(--card);display:flex;flex-direction:column;flex-shrink:0">
+          <div style="padding:16px;border-bottom:1px solid var(--border)">
+            <button class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:12px" onclick="showToast('新对话已创建')">＋ 新对话</button>
+            <div style="position:relative">
+              <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-disabled);font-size:14px">🔍</span>
+              <input class="form-input" style="padding-left:32px;font-size:13px" placeholder="搜索历史对话...">
             </div>
           </div>
-          <div style="display:flex;gap:12px;margin-bottom:20px;flex-direction:row-reverse">
-            <div style="width:32px;height:32px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;color:white">A</div>
-            <div style="max-width:70%;text-align:right">
-              <div style="padding:12px 16px;border-radius:12px;background:var(--primary);color:white;font-size:14px;line-height:1.6">杭州可人酒店，高端商务度假型酒店，位于西湖景区核心位置，帮我写推广文案。</div>
-              <div style="font-size:11px;color:var(--text-disabled);margin-top:4px">10:30 AM</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:12px;margin-bottom:20px;flex-direction:row">
-            <div style="width:32px;height:32px;border-radius:50%;background:#E0F2FE;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🤖</div>
-            <div style="max-width:70%">
-              <div style="padding:12px 16px;border-radius:12px;background:var(--card);border:1px solid var(--border);font-size:14px;line-height:1.6">
-                <div style="margin-bottom:8px"><span style="font-size:12px;font-weight:600;color:var(--text-secondary)">📝 短文案</span><div style="font-size:14px;line-height:1.6;padding:8px 12px;background:var(--bg);border-radius:6px;margin-top:4px">西湖边的隐世桃源——杭州可人酒店，唤醒你心中的诗意。</div></div>
-                <div style="margin-bottom:8px"><span style="font-size:12px;font-weight:600;color:var(--text-secondary)">📄 长文案</span><div style="font-size:14px;line-height:1.6;padding:8px 12px;background:var(--bg);border-radius:6px;margin-top:4px">在西湖畔醒来，推窗即景。杭州可人酒店，坐落于西湖景区核心位置...</div></div>
-                <div style="margin-bottom:8px"><span style="font-size:12px;font-weight:600;color:var(--text-secondary)">📱 社交媒体文案</span><div style="font-size:14px;line-height:1.6;padding:8px 12px;background:var(--bg);border-radius:6px;margin-top:4px">终于住到了心心念念的杭州可人酒店！西湖景观绝了🌅</div></div>
-                <div style="display:flex;gap:8px;margin-top:12px">
-                  <button class="btn btn-sm btn-success">✅ 确认发布</button>
-                  <button class="btn btn-sm btn-outline">🔄 重新生成</button>
-                </div>
-                <div style="font-size:12px;color:var(--secondary);cursor:pointer;margin-top:8px;user-select:none" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.nextElementSibling.classList.contains('show')?'🔍 收起思考过程 ▴':'🔍 查看思考过程 ▾'">🔍 查看思考过程 ▾</div>
-                <div style="display:none;margin-top:8px;padding:12px;background:#F1F5F9;border-radius:6px;font-size:12px;color:var(--text-secondary);line-height:1.6" class="thinking-content">
-                  <strong>推理步骤：</strong><br>1. 分析输入<br>2. 提取卖点：西湖景观、管家服务<br>3. 选择风格：温暖亲和<br>4. 生成三段文案<br>5. 校验通过 ✅
-                </div>
+          <div style="flex:1;overflow-y:auto;padding:8px">
+            <div class="conversation-item active" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px;background:#F1F5F9" onclick="selectConversation(this)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-weight:600;font-size:13px">杭州可人酒店推广</span>
+                <span style="font-size:11px;color:var(--text-disabled)">5m ago</span>
               </div>
-              <div style="font-size:11px;color:var(--text-disabled);margin-top:4px">10:32 AM · 1,250 tokens</div>
+              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">帮我写一个关于杭州可人酒店的推广文案</div>
+              <div style="display:flex;gap:4px;margin-top:6px">
+                <span class="tag tag-blue">copywriter</span>
+                <span style="font-size:11px;color:var(--text-disabled)">1,250 tokens</span>
+              </div>
+            </div>
+            <div class="conversation-item" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px" onclick="selectConversation(this)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-weight:600;font-size:13px">客户投诉处理</span>
+                <span style="font-size:11px;color:var(--text-disabled)">12m ago</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">处理这封投诉邮件：产品坏了我要退款</div>
+              <div style="display:flex;gap:4px;margin-top:6px">
+                <span class="tag tag-yellow">email_sorter</span>
+                <span style="font-size:11px;color:var(--text-disabled)">340 tokens</span>
+              </div>
+            </div>
+            <div class="conversation-item" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px" onclick="selectConversation(this)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-weight:600;font-size:13px">竞品分析报告</span>
+                <span style="font-size:11px;color:var(--text-disabled)">32m ago</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">分析我们的主要竞争对手</div>
+              <div style="display:flex;gap:4px;margin-top:6px">
+                <span class="tag tag-purple">competitive</span>
+                <span style="font-size:11px;color:var(--text-disabled)">4,500 tokens</span>
+              </div>
+            </div>
+            <div class="conversation-item" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px" onclick="selectConversation(this)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-weight:600;font-size:13px">智能水杯种草笔记</span>
+                <span style="font-size:11px;color:var(--text-disabled)">1h ago</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">帮我写一篇小红书笔记推广智能水杯</div>
+              <div style="display:flex;gap:4px;margin-top:6px">
+                <span class="tag tag-green">xhs_poster</span>
+                <span style="font-size:11px;color:var(--text-disabled)">2,100 tokens</span>
+              </div>
+            </div>
+            <div class="conversation-item" style="padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px" onclick="selectConversation(this)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-weight:600;font-size:13px">产品评审会议</span>
+                <span style="font-size:11px;color:var(--text-disabled)">2h ago</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">本周产品评审会纪要</div>
+              <div style="display:flex;gap:4px;margin-top:6px">
+                <span class="tag tag-red">meeting</span>
+                <span style="font-size:11px;color:var(--text-disabled)">2,800 tokens</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div style="margin-top:16px">
-          <div style="display:flex;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;align-items:flex-end">
-            <textarea style="flex:1;border:none;outline:none;font-size:14px;font-family:inherit;resize:none;min-height:40px;background:transparent" rows="1" placeholder="输入 @agent 指定 Agent，或直接描述任务..."></textarea>
-            <button class="btn btn-primary btn-sm">➤</button>
+          <div style="padding:12px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--text-secondary);display:flex;justify-content:space-between">
+            <span>📋 共 12 个对话</span>
+            <span>📥 导出全部</span>
           </div>
-          <div style="font-size:11px;color:var(--text-disabled);padding:4px 16px 0">可用: @copywriter · @email_sorter · @xhs_poster · Enter 发送</div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+          <!-- Chat Header -->
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--card);flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:8px;flex:1">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--success)"></span>
+              <span style="font-weight:600;font-size:14px">杭州可人酒店推广</span>
+              <span class="tag tag-green">● 进行中</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <label style="font-size:12px;color:var(--text-secondary)">Agent:</label>
+              <select class="form-input" style="width:auto;padding:4px 24px 4px 8px;font-size:12px">
+                <option>copywriter</option>
+                <option>email_sorter</option>
+                <option>xhs_poster</option>
+                <option>competitive_analysis</option>
+                <option>meeting_minutes</option>
+              </select>
+              <span style="font-size:11px;color:var(--text-disabled)">Model: deepseek-v4-flash</span>
+            </div>
+          </div>
+
+          <!-- Messages -->
+          <div style="flex:1;overflow-y:auto;padding:20px 24px">
+            <div style="display:flex;gap:12px;margin-bottom:20px;flex-direction:row">
+              <div style="width:32px;height:32px;border-radius:50%;background:#E0F2FE;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🤖</div>
+              <div style="max-width:70%">
+                <div style="padding:12px 16px;border-radius:12px;background:var(--card);border:1px solid var(--border);font-size:14px;line-height:1.6">您好！我是文案生成助手。请告诉我您需要推广的产品或服务信息，我会为您生成三段式营销文案。</div>
+                <div style="font-size:11px;color:var(--text-disabled);margin-top:4px">10:28 AM · 120 tokens</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;flex-direction:row-reverse">
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;color:white">A</div>
+              <div style="max-width:70%;text-align:right">
+                <div style="padding:12px 16px;border-radius:12px;background:var(--primary);color:white;font-size:14px;line-height:1.6">杭州可人酒店，高端商务度假型酒店，位于西湖景区核心位置，主打西湖景观和管家式服务。帮我写推广文案。</div>
+                <div style="font-size:11px;color:var(--text-disabled);margin-top:4px">10:30 AM</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;flex-direction:row">
+              <div style="width:32px;height:32px;border-radius:50%;background:#E0F2FE;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🤖</div>
+              <div style="max-width:70%">
+                <div style="padding:12px 16px;border-radius:12px;background:var(--card);border:1px solid var(--border);font-size:14px;line-height:1.6">
+                  <div style="margin-bottom:8px"><span style="font-size:12px;font-weight:600;color:var(--text-secondary)">📝 短文案</span><div style="font-size:14px;line-height:1.6;padding:8px 12px;background:var(--bg);border-radius:6px;margin-top:4px">西湖边的隐世桃源——杭州可人酒店，唤醒你心中的诗意。</div></div>
+                  <div style="margin-bottom:8px"><span style="font-size:12px;font-weight:600;color:var(--text-secondary)">📄 长文案</span><div style="font-size:14px;line-height:1.6;padding:8px 12px;background:var(--bg);border-radius:6px;margin-top:4px">在西湖畔醒来，推窗即景。杭州可人酒店，坐落于西湖景区核心位置，每一间客房都精心设计，将湖光山色引入室内。</div></div>
+                  <div style="margin-bottom:8px"><span style="font-size:12px;font-weight:600;color:var(--text-secondary)">📱 社交媒体文案</span><div style="font-size:14px;line-height:1.6;padding:8px 12px;background:var(--bg);border-radius:6px;margin-top:4px">终于住到了心心念念的杭州可人酒店！西湖景观绝了🌅</div></div>
+                  <div style="display:flex;gap:8px;margin-top:12px">
+                    <button class="btn btn-sm btn-success">✅ 确认发布</button>
+                    <button class="btn btn-sm btn-outline">🔄 重新生成</button>
+                  </div>
+                  <div style="font-size:12px;color:var(--secondary);cursor:pointer;margin-top:8px;user-select:none" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.nextElementSibling.classList.contains('show')?'🔍 收起思考过程 ▴':'🔍 查看思考过程 ▾'">🔍 查看思考过程 ▾</div>
+                  <div style="display:none;margin-top:8px;padding:12px;background:#F1F5F9;border-radius:6px;font-size:12px;color:var(--text-secondary);line-height:1.6"><strong>推理步骤：</strong><br>1. 分析输入<br>2. 提取卖点<br>3. 选择风格<br>4. 生成三段文案</div>
+                </div>
+                <div style="font-size:11px;color:var(--text-disabled);margin-top:4px">10:32 AM · 1,250 tokens · deepseek-v4-flash</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input Area -->
+          <div style="padding:12px 24px;border-top:1px solid var(--border);background:var(--card)">
+            <div style="display:flex;gap:8px;align-items:flex-end">
+              <button class="btn btn-sm btn-outline" style="padding:8px 10px;font-size:16px" title="上传文件">📎</button>
+              <textarea style="flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px;font-family:inherit;resize:none;min-height:44px;outline:none;background:var(--bg)" rows="1" placeholder="输入 @agent 指定 Agent，或直接描述任务..."></textarea>
+              <button class="btn btn-primary" style="padding:10px 16px">➤</button>
+            </div>
+            <div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--text-disabled)">
+              <span>💡 提示：使用 @agent 指定 Agent，如 @copywriter 写文案</span>
+              <span>⏎ Enter 发送 · ⇧⏎ 换行</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -679,6 +768,12 @@ function switchUsageTab(el,view) {
   el.style.color='var(--primary)';el.style.fontWeight='600';el.style.borderBottom='2px solid var(--primary)';
   document.querySelectorAll('.usage-view').forEach(v=>v.style.display='none');
   document.getElementById('usage-'+view).style.display='block';
+}
+
+// ===== Conversation =====
+function selectConversation(el) {
+  document.querySelectorAll('.conversation-item').forEach(c=>c.style.background='transparent');
+  el.style.background='var(--bg)';
 }
 
 // ===== Slide Panel =====
