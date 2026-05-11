@@ -19,7 +19,7 @@ model:
   temperature: 0.3
   max_tokens: 4096
   api_base_url: "https://api.deepseek.com"    # 留空自动使用 provider 默认地址
-  api_key: "sk-6f4aeef98c0c4467a31e72da661eef53"         # 必填，无 API Key 时系统无法运行
+  api_key: "your-key"         # 必填，无 API Key 时系统无法运行
 
 runtime:
   plugins_dir: "./build/plugins"
