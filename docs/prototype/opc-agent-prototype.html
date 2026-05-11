@@ -3,183 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OPC-Agent · 高保真原型</title>
+<title>OPC-Agent · 高保真原型 v2</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --primary: #1E3A5F;
-  --primary-light: #2D5A8E;
-  --secondary: #0891B2;
-  --accent: #F59E0B;
-  --success: #10B981;
-  --danger: #EF4444;
-  --warning: #F97316;
-  --bg: #F8FAFC;
-  --card: #FFFFFF;
-  --border: #E2E8F0;
-  --text: #1E293B;
-  --text-secondary: #64748B;
-  --text-disabled: #94A3B8;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.08);
-  --shadow-lg: 0 4px 12px rgba(0,0,0,0.1);
+  --primary: #1E3A5F; --primary-light: #2D5A8E; --secondary: #0891B2;
+  --accent: #F59E0B; --success: #10B981; --danger: #EF4444; --warning: #F97316;
+  --bg: #F8FAFC; --card: #FFFFFF; --border: #E2E8F0;
+  --text: #1E293B; --text-secondary: #64748B; --text-disabled: #94A3B8;
+  --radius: 12px; --radius-sm: 8px; --radius-lg: 16px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08); --shadow-lg: 0 4px 12px rgba(0,0,0,0.1);
   --sidebar-width: 240px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; display: flex; min-height: 100vh; }
-a { text-decoration: none; color: inherit; }
 
 /* Sidebar */
 .sidebar {
-  width: var(--sidebar-width);
-  background: var(--primary);
-  color: white;
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  top: 0; left: 0; bottom: 0;
-  z-index: 100;
+  width: var(--sidebar-width); background: var(--primary); color: white;
+  display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
   transition: transform 0.3s;
 }
-.sidebar-brand {
-  padding: 24px 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-}
+.sidebar-brand { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .sidebar-brand h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
 .sidebar-brand span { font-size: 12px; color: var(--secondary); font-weight: 500; }
 .sidebar-nav { flex: 1; padding: 12px 0; }
 .nav-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 10px 20px; margin: 2px 8px; border-radius: var(--radius-sm);
-  color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 500;
+  display: flex; align-items: center; gap: 12px; padding: 10px 20px; margin: 2px 8px;
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.7); cursor: pointer;
+  transition: all 0.2s; font-size: 14px; font-weight: 500;
 }
 .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
 .nav-item.active { background: rgba(255,255,255,0.15); color: white; }
 .nav-item .icon { font-size: 18px; width: 24px; text-align: center; }
-.sidebar-footer {
-  padding: 16px 20px;
-  border-top: 1px solid rgba(255,255,255,0.1);
-  font-size: 11px; color: rgba(255,255,255,0.4);
-}
+.sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: rgba(255,255,255,0.4); }
 
 /* Main */
 .main { margin-left: var(--sidebar-width); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
 .topbar {
-  background: var(--card); border-bottom: 1px solid var(--border);
-  padding: 12px 32px; display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; z-index: 50;
+  background: var(--card); border-bottom: 1px solid var(--border); padding: 12px 32px;
+  display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50;
 }
 .topbar-title { font-size: 18px; font-weight: 600; }
 .topbar-right { display: flex; align-items: center; gap: 16px; }
-.status-badge {
-  display: flex; align-items: center; gap: 6px;
-  background: #ECFDF5; color: #065F46; padding: 4px 12px;
-  border-radius: 20px; font-size: 12px; font-weight: 500;
-}
+.status-badge { display: flex; align-items: center; gap: 6px; background: #ECFDF5; color: #065F46; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
-.avatar {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: var(--primary); color: white;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 600;
-}
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
 .content { flex: 1; padding: 24px 32px; overflow-y: auto; }
-
-/* Page visibility */
 .page { display: none; }
 .page.active { display: block; }
 
-/* Cards */
-.card {
-  background: var(--card); border-radius: var(--radius);
-  border: 1px solid var(--border); padding: 20px;
-  box-shadow: var(--shadow); transition: box-shadow 0.2s;
-}
+/* Cards & layout */
+.card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 20px; box-shadow: var(--shadow); transition: box-shadow 0.2s; }
 .card:hover { box-shadow: var(--shadow-lg); }
-
-/* Stats grid */
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
 .stat-card { padding: 20px; }
-.stat-card .icon-bg {
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; margin-bottom: 12px;
-}
+.stat-card .icon-bg { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 12px; }
 .stat-card .value { font-size: 28px; font-weight: 700; font-family: 'JetBrains Mono', monospace; line-height: 1.2; }
 .stat-card .label { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
 .stat-card .trend { font-size: 12px; margin-top: 8px; display: flex; align-items: center; gap: 4px; }
-.trend-up { color: var(--success); }
-.trend-down { color: var(--danger); }
-.trend-neutral { color: var(--text-secondary); }
+.trend-up { color: var(--success); } .trend-down { color: var(--danger); } .trend-neutral { color: var(--text-secondary); }
 
-/* Quick actions */
-.quick-actions { display: flex; gap: 12px; margin-bottom: 24px; }
-.btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 10px 20px; border-radius: var(--radius-sm);
-  font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s;
-}
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; }
 .btn-primary { background: var(--primary); color: white; }
 .btn-primary:hover { background: var(--primary-light); }
 .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
 .btn-outline:hover { background: var(--bg); }
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 .btn-success { background: var(--success); color: white; }
-.btn-warning { background: var(--accent); color: white; }
 .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+.btn-ghost { background: transparent; border: none; cursor: pointer; padding: 4px 8px; font-size: 16px; color: var(--text-secondary); }
+.btn-ghost:hover { color: var(--text); }
 
-/* Activity list */
-.activity-list { list-style: none; }
-.activity-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 0; border-bottom: 1px solid var(--border);
-}
-.activity-item:last-child { border-bottom: none; }
-.activity-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-.activity-body { flex: 1; }
-.activity-title { font-weight: 500; font-size: 13px; }
-.activity-meta { color: var(--text-secondary); font-size: 12px; margin-top: 2px; }
-.activity-time { color: var(--text-disabled); font-size: 12px; white-space: nowrap; }
+/* Tags */
+.tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+.tag-blue { background: #DBEAFE; color: #1E40AF; }
+.tag-green { background: #D1FAE5; color: #065F46; }
+.tag-yellow { background: #FEF3C7; color: #92400E; }
+.tag-red { background: #FEE2E2; color: #991B1B; }
+.tag-purple { background: #F3E8FF; color: #6B21A8; }
 
-/* Chat */
-.chat-container { display: flex; flex-direction: column; height: calc(100vh - 140px); }
-.chat-messages { flex: 1; overflow-y: auto; padding-right: 8px; }
-.chat-bubble { display: flex; gap: 12px; margin-bottom: 20px; }
-.chat-bubble.user { flex-direction: row-reverse; }
-.chat-avatar {
-  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; font-size: 14px;
-}
-.chat-avatar.agent { background: #E0F2FE; color: var(--secondary); }
-.chat-avatar.user { background: var(--primary); color: white; }
-.chat-content { max-width: 70%; }
-.chat-bubble.user .chat-content { text-align: right; }
-.chat-text {
-  padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.6;
-}
-.chat-bubble.agent .chat-text { background: var(--card); border: 1px solid var(--border); }
-.chat-bubble.user .chat-text { background: var(--primary); color: white; }
-.chat-time { font-size: 11px; color: var(--text-disabled); margin-top: 4px; }
+/* Tables */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th { text-align: left; padding: 10px 12px; font-size: 12px; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid var(--border); }
+.data-table td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
+.data-table tr:hover td { background: var(--bg); }
+.data-table .mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.mini-bar { height: 6px; border-radius: 3px; background: #DBEAFE; flex: 1; max-width: 100px; position: relative; overflow: hidden; }
+.mini-bar-fill { height: 100%; border-radius: 3px; background: var(--secondary); }
+.bar-cell { display: flex; align-items: center; gap: 8px; }
 
-/* Agent output */
-.agent-output { margin-top: 12px; }
-.output-section { margin-bottom: 12px; }
-.output-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
-.output-text { font-size: 14px; line-height: 1.6; color: var(--text); padding: 8px 12px; background: var(--bg); border-radius: 6px; }
-.output-actions { display: flex; gap: 8px; margin-top: 12px; }
-.thinking-toggle {
-  font-size: 12px; color: var(--secondary); cursor: pointer; margin-top: 8px; user-select: none;
+/* Chart */
+.chart-area {
+  height: 180px; display: flex; align-items: flex-end; gap: 4px; padding: 16px 8px 0; overflow-x: auto;
 }
-.thinking-content { display: none; margin-top: 8px; padding: 12px; background: #F1F5F9; border-radius: 6px; font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
-.thinking-content.show { display: block; }
-.chat-input-area {
-  margin-top: 16px; display: flex; gap: 8px;
-  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 12px 16px; align-items: flex-end;
-}
-.chat-input { flex: 1; border: none; outline: none; font-size: 14px; font-family: inherit; resize: none; min-height: 40px; background: transparent; }
-.chat-input-hint { font-size: 11px; color: var(--text-disabled); padding: 4px 16px 12px; }
+.chart-bar-group { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 30px; }
+.chart-stack { display: flex; gap: 1px; width: 100%; align-items: flex-end; }
+.chart-stack-bar { flex: 1; border-radius: 2px 2px 0 0; transition: height 0.5s; min-height: 2px; }
 
 /* Agent cards */
 .agent-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
@@ -187,118 +108,134 @@ a { text-decoration: none; color: inherit; }
 .agent-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
 .agent-status { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .agent-status.online { background: var(--success); }
-.agent-status.offline { background: var(--text-disabled); }
 .agent-name { font-weight: 600; font-size: 15px; }
 .agent-summary { color: var(--text-secondary); font-size: 13px; }
-.agent-meta { display: flex; gap: 16px; margin: 12px 0; font-size: 12px; color: var(--text-secondary); }
-.agent-meta span { display: flex; align-items: center; gap: 4px; }
+.agent-meta { display: flex; gap: 16px; margin: 12px 0; font-size: 12px; color: var(--text-secondary); flex-wrap: wrap; }
 .agent-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
-/* Usage */
-.usage-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.chart-placeholder {
-  height: 200px; background: linear-gradient(135deg, var(--bg), #E0F2FE);
-  border-radius: var(--radius); display: flex; align-items: flex-end; padding: 16px; gap: 4px; overflow: hidden;
-}
-.chart-bar {
-  flex: 1; border-radius: 3px 3px 0 0;
-  background: linear-gradient(to top, var(--secondary), #7DD3FC);
-  transition: height 0.5s; min-height: 4px;
-}
-.usage-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-.usage-table th { text-align: left; padding: 10px 12px; font-size: 12px; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid var(--border); }
-.usage-table td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
-.usage-table tr:hover td { background: var(--bg); }
-.usage-table .mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
-.usage-table .bar-cell { display: flex; align-items: center; gap: 8px; }
-.usage-table .mini-bar { height: 6px; border-radius: 3px; background: #DBEAFE; flex: 1; max-width: 100px; position: relative; overflow: hidden; }
-.usage-table .mini-bar-fill { height: 100%; border-radius: 3px; background: var(--secondary); }
-
-/* Settings */
-.settings-section { margin-bottom: 32px; }
-.settings-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+/* Form */
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--text); }
-.form-input {
-  width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
-  font-size: 14px; font-family: inherit; background: var(--card); color: var(--text); outline: none;
-  transition: border-color 0.2s;
-}
+.form-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; font-family: inherit; background: var(--card); color: var(--text); outline: none; transition: border-color 0.2s; }
 .form-input:focus { border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(8,145,178,0.1); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .form-actions { display: flex; gap: 8px; margin-top: 8px; }
 .form-hint { font-size: 11px; color: var(--text-disabled); margin-top: 4px; }
+select.form-input { cursor: pointer; }
+
+/* Slide panel */
+.slide-panel {
+  position: fixed; top: 0; right: -480px; width: 480px; height: 100vh; background: var(--card);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.15); z-index: 200; transition: right 0.3s;
+  display: flex; flex-direction: column;
+}
+.slide-panel.open { right: 0; }
+.panel-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.panel-header h3 { font-size: 16px; font-weight: 600; }
+.panel-body { flex: 1; padding: 24px; overflow-y: auto; }
+.panel-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 150; display: none; }
+.overlay.show { display: block; }
+
+/* Modal */
+.modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 560px; max-width: 90vw; max-height: 85vh; background: var(--card); border-radius: var(--radius-lg); box-shadow: 0 20px 60px rgba(0,0,0,0.15); z-index: 300; display: none; flex-direction: column; }
+.modal.open { display: flex; }
+.modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal-header h3 { font-size: 16px; font-weight: 600; }
+.modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+
+/* Model card in settings */
+.model-card {
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px;
+  transition: border-color 0.2s;
+}
+.model-card:hover { border-color: var(--secondary); }
+.model-card .model-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.model-card .model-info { flex: 1; }
+.model-card .model-name { font-weight: 600; font-size: 14px; }
+.model-card .model-provider { font-size: 12px; color: var(--text-secondary); }
+.model-card .model-status { font-size: 11px; }
+.model-card .model-actions { display: flex; gap: 4px; }
+
+/* Agent detail */
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.detail-item { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.detail-item .label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+.detail-item .value { font-size: 14px; margin-top: 4px; }
+.history-item { padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.history-item:last-child { border-bottom: none; }
 
 /* Toast */
-.toast {
-  position: fixed; bottom: 24px; right: 24px;
-  background: var(--primary); color: white; padding: 12px 20px;
-  border-radius: var(--radius-sm); box-shadow: var(--shadow-lg);
-  font-size: 13px; font-weight: 500; z-index: 999;
-  opacity: 0; transform: translateY(20px); transition: all 0.3s;
-}
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--primary); color: white; padding: 12px 20px; border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); font-size: 13px; font-weight: 500; z-index: 999; opacity: 0; transform: translateY(20px); transition: all 0.3s; }
 .toast.show { opacity: 1; transform: translateY(0); }
 
 /* Responsive */
-@media (max-width: 1024px) {
+@media (max-width:1024px) {
   .sidebar { transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); }
   .main { margin-left: 0; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .stats-grid { grid-template-columns: repeat(2,1fr); }
   .agent-grid { grid-template-columns: 1fr; }
+  .slide-panel { width: 100%; right: -100%; }
 }
-@media (max-width: 768px) {
+@media (max-width:768px) {
   .content { padding: 16px; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .form-row { grid-template-columns: 1fr; }
-  .quick-actions { flex-wrap: wrap; }
   .mobile-menu { display: flex !important; }
+  .detail-grid { grid-template-columns: 1fr; }
 }
 .mobile-menu { display: none; background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer; padding: 4px; }
-
-/* Tags / pills */
-.tag {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;
-}
-.tag-blue { background: #DBEAFE; color: #1E40AF; }
-.tag-green { background: #D1FAE5; color: #065F46; }
-.tag-yellow { background: #FEF3C7; color: #92400E; }
-
-/* Skeleton loading */
-@keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
-.skeleton { background: linear-gradient(90deg, var(--border) 25%, #F1F5F9 50%, var(--border) 75%); background-size: 400px 100%; animation: shimmer 1.5s infinite; border-radius: 4px; }
 </style>
 </head>
 <body>
 
-<!-- Sidebar -->
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="closeSlidePanel();closeModal();"></div>
+
+<!-- Sidebar (unchanged) -->
 <aside class="sidebar" id="sidebar">
-  <div class="sidebar-brand">
-    <h1>OPC-Agent</h1>
-    <span>AI 团队指挥中心</span>
-  </div>
+  <div class="sidebar-brand"><h1>OPC-Agent</h1><span>AI 团队指挥中心</span></div>
   <nav class="sidebar-nav">
-    <div class="nav-item active" onclick="navigate('dashboard')">
-      <span class="icon">📊</span> 总览
-    </div>
-    <div class="nav-item" onclick="navigate('chat')">
-      <span class="icon">💬</span> 对话
-    </div>
-    <div class="nav-item" onclick="navigate('agents')">
-      <span class="icon">🤖</span> Agent 管理
-    </div>
-    <div class="nav-item" onclick="navigate('usage')">
-      <span class="icon">📈</span> 用量统计
-    </div>
-    <div class="nav-item" onclick="navigate('settings')">
-      <span class="icon">⚙️</span> 系统设置
-    </div>
+    <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">📊</span> 总览</div>
+    <div class="nav-item" onclick="navigate('chat')"><span class="icon">💬</span> 对话</div>
+    <div class="nav-item" onclick="navigate('agents')"><span class="icon">🤖</span> Agent 管理</div>
+    <div class="nav-item" onclick="navigate('usage')"><span class="icon">📈</span> 用量统计</div>
+    <div class="nav-item" onclick="navigate('settings')"><span class="icon">⚙️</span> 系统设置</div>
   </nav>
-  <div class="sidebar-footer">
-    v0.1.0 · Model: deepseek-chat · Uptime: 3d 12h
-  </div>
+  <div class="sidebar-footer">v0.1.0 · 5 Agents · Uptime: 3d 12h</div>
 </aside>
+
+<!-- Slide Panel -->
+<div class="slide-panel" id="slidePanel">
+  <div class="panel-header">
+    <h3 id="panelTitle">Agent 配置</h3>
+    <button class="btn-ghost" onclick="closeSlidePanel()">✕</button>
+  </div>
+  <div class="panel-body" id="panelBody">
+    <!-- Dynamic content -->
+  </div>
+  <div class="panel-footer">
+    <button class="btn btn-outline" onclick="closeSlidePanel()">取消</button>
+    <button class="btn btn-primary" onclick="showToast('配置已保存');closeSlidePanel()">💾 保存</button>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="modal-header">
+    <h3 id="modalTitle">Agent 详情</h3>
+    <button class="btn-ghost" onclick="closeModal()">✕</button>
+  </div>
+  <div class="modal-body" id="modalBody">
+    <!-- Dynamic content -->
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal()">关闭</button>
+  </div>
+</div>
 
 <!-- Main -->
 <div class="main">
@@ -308,10 +245,7 @@ a { text-decoration: none; color: inherit; }
       <h2 class="topbar-title" id="pageTitle">总览</h2>
     </div>
     <div class="topbar-right">
-      <div class="status-badge">
-        <span class="status-dot"></span>
-        系统正常
-      </div>
+      <div class="status-badge"><span class="status-dot"></span>系统正常</div>
       <div class="avatar">A</div>
     </div>
   </header>
@@ -336,69 +270,50 @@ a { text-decoration: none; color: inherit; }
         <div class="card stat-card">
           <div class="icon-bg" style="background:#ECFDF5;color:var(--success)">📊</div>
           <div class="value">$0.32</div>
-          <div class="label">本月费用</div>
+          <div class="label">今日费用</div>
           <div class="trend trend-neutral">预算内 ✅</div>
         </div>
         <div class="card stat-card">
           <div class="icon-bg" style="background:#F3E8FF;color:#9333EA">📋</div>
-          <div class="value" style="font-family:'JetBrains Mono',monospace">47</div>
+          <div class="value">47</div>
           <div class="label">任务总数</div>
           <div class="trend trend-up">↑ 今日 12</div>
         </div>
       </div>
-
-      <div class="quick-actions">
-        <button class="btn btn-primary" onclick="navigate('chat')">💬 新对话</button>
+      <div class="quick-actions" style="display:flex;gap:12px;margin-bottom:24px">
+        <button class="btn btn-primary">💬 新对话</button>
         <button class="btn btn-outline" onclick="navigate('agents')">🤖 管理 Agent</button>
         <button class="btn btn-outline" onclick="navigate('usage')">📈 查看用量</button>
       </div>
-
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <h3 style="font-size:15px;font-weight:600">最近活动</h3>
+          <span style="font-weight:600;font-size:15px">最近活动</span>
           <a href="#" style="font-size:13px;color:var(--secondary)">查看全部 →</a>
         </div>
-        <ul class="activity-list">
-          <li class="activity-item">
-            <div class="activity-icon" style="background:#E0F2FE">💬</div>
-            <div class="activity-body">
-              <div class="activity-title">文案生成 · 杭州可人酒店推广</div>
-              <div class="activity-meta">copywriter · 1,250 tokens · $0.003</div>
-            </div>
-            <span class="activity-time">5 分钟前</span>
-          </li>
-          <li class="activity-item">
-            <div class="activity-icon" style="background:#D1FAE5">📧</div>
-            <div class="activity-body">
-              <div class="activity-title">邮件分类 · 客户投诉处理</div>
-              <div class="activity-meta">email_sorter · 340 tokens · $0.001</div>
-            </div>
-            <span class="activity-time">12 分钟前</span>
-          </li>
-          <li class="activity-item">
-            <div class="activity-icon" style="background:#F3E8FF">📊</div>
-            <div class="activity-body">
-              <div class="activity-title">竞品分析 · 主要竞争对手报告</div>
-              <div class="activity-meta">competitive_analysis · 4,500 tokens · $0.011</div>
-            </div>
-            <span class="activity-time">32 分钟前</span>
-          </li>
-          <li class="activity-item">
-            <div class="activity-icon" style="background:#FEF3C7">📕</div>
-            <div class="activity-body">
-              <div class="activity-title">内容生成 · 智能水杯种草笔记</div>
-              <div class="activity-meta">xhs_poster · 2,100 tokens · $0.005</div>
-            </div>
-            <span class="activity-time">1 小时前</span>
-          </li>
-        </ul>
+        <div class="data-table">
+          <div class="history-item" style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div class="activity-icon" style="width:32px;height:32px;border-radius:8px;background:#E0F2FE;display:flex;align-items:center;justify-content:center;font-size:14px">💬</div>
+            <div style="flex:1"><div style="font-weight:500;font-size:13px">文案生成 · 杭州可人酒店推广</div><div style="font-size:12px;color:var(--text-secondary)">copywriter · deepseek-v4-flash · 1,250 tokens</div></div>
+            <span style="font-size:12px;color:var(--text-disabled)">5 分钟前</span>
+          </div>
+          <div class="history-item" style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div class="activity-icon" style="width:32px;height:32px;border-radius:8px;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:14px">📧</div>
+            <div style="flex:1"><div style="font-weight:500;font-size:13px">邮件分类 · 客户投诉处理</div><div style="font-size:12px;color:var(--text-secondary)">email_sorter · gemini-2.0-flash · 340 tokens</div></div>
+            <span style="font-size:12px;color:var(--text-disabled)">12 分钟前</span>
+          </div>
+          <div class="history-item" style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div class="activity-icon" style="width:32px;height:32px;border-radius:8px;background:#F3E8FF;display:flex;align-items:center;justify-content:center;font-size:14px">📊</div>
+            <div style="flex:1"><div style="font-weight:500;font-size:13px">竞品分析 · 竞品报告</div><div style="font-size:12px;color:var(--text-secondary)">competitive_analysis · deepseek-v4-flash · 4,500 tokens</div></div>
+            <span style="font-size:12px;color:var(--text-disabled)">32 分钟前</span>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- ====== Chat ====== -->
     <div class="page" id="page-chat">
-      <div class="chat-container">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <div class="chat-container" style="display:flex;flex-direction:column;height:calc(100vh - 140px)">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
           <label style="font-size:13px;font-weight:500;color:var(--text-secondary)">Agent:</label>
           <select class="form-input" style="width:auto;padding:6px 24px 6px 12px">
             <option>copywriter · 文案生成</option>
@@ -408,185 +323,103 @@ a { text-decoration: none; color: inherit; }
             <option>meeting_minutes · 会议纪要</option>
           </select>
           <span class="tag tag-green">● 在线</span>
+          <span style="font-size:12px;color:var(--text-secondary);margin-left:auto">Model: deepseek-v4-flash · Token: 1,250</span>
         </div>
-
-        <div class="chat-messages">
-          <div class="chat-bubble agent">
-            <div class="chat-avatar agent">🤖</div>
-            <div class="chat-content">
-              <div class="chat-text">
-                您好！我是文案生成助手。请告诉我您需要推广的产品或服务信息，我会为您生成三段式营销文案。
-              </div>
-              <div class="chat-time">10:28 AM · 120 tokens</div>
+        <div style="flex:1;overflow-y:auto;padding-right:8px">
+          <div style="display:flex;gap:12px;margin-bottom:20px;flex-direction:row">
+            <div style="width:32px;height:32px;border-radius:50%;background:#E0F2FE;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🤖</div>
+            <div style="max-width:70%">
+              <div style="padding:12px 16px;border-radius:12px;background:var(--card);border:1px solid var(--border);font-size:14px;line-height:1.6">您好！我是文案生成助手。请告诉我您需要推广的产品或服务信息。</div>
+              <div style="font-size:11px;color:var(--text-disabled);margin-top:4px">10:28 AM · 120 tokens</div>
             </div>
           </div>
-
-          <div class="chat-bubble user">
-            <div class="chat-avatar user">A</div>
-            <div class="chat-content">
-              <div class="chat-text">杭州可人酒店，高端商务度假型酒店，位于西湖景区核心位置，主打西湖景观和管家式服务。帮我写推广文案。</div>
-              <div class="chat-time">10:30 AM</div>
+          <div style="display:flex;gap:12px;margin-bottom:20px;flex-direction:row-reverse">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;color:white">A</div>
+            <div style="max-width:70%;text-align:right">
+              <div style="padding:12px 16px;border-radius:12px;background:var(--primary);color:white;font-size:14px;line-height:1.6">杭州可人酒店，高端商务度假型酒店，位于西湖景区核心位置，帮我写推广文案。</div>
+              <div style="font-size:11px;color:var(--text-disabled);margin-top:4px">10:30 AM</div>
             </div>
           </div>
-
-          <div class="chat-bubble agent">
-            <div class="chat-avatar agent">🤖</div>
-            <div class="chat-content">
-              <div class="chat-text">
-                <div class="agent-output">
-                  <div class="output-section">
-                    <div class="output-label">📝 短文案</div>
-                    <div class="output-text">西湖边的隐世桃源——杭州可人酒店，唤醒你心中的诗意。</div>
-                  </div>
-                  <div class="output-section">
-                    <div class="output-label">📄 长文案</div>
-                    <div class="output-text">在西湖畔醒来，推窗即景。杭州可人酒店，坐落于西湖景区核心位置，每一间客房都精心设计，将湖光山色引入室内。我们的管家服务团队24小时待命，为您的每一次入住打造难忘体验。商务出行或休闲度假，这里都是您的理想之选。</div>
-                  </div>
-                  <div class="output-section">
-                    <div class="output-label">📱 社交媒体文案</div>
-                    <div class="output-text">终于住到了心心念念的杭州可人酒店！西湖景观绝了🌅 管家服务超贴心，姐妹们冲！🔥 #杭州酒店 #西湖美景</div>
-                  </div>
-                  <div class="output-actions">
-                    <button class="btn btn-sm btn-success">✅ 确认发布</button>
-                    <button class="btn btn-sm btn-outline">🔄 重新生成</button>
-                    <button class="btn btn-sm btn-outline">✏️ 编辑</button>
-                  </div>
-                  <div class="thinking-toggle" onclick="toggleThinking(this)">🔍 查看思考过程 ▾</div>
-                  <div class="thinking-content">
-                    <strong>推理步骤：</strong><br>
-                    1. 分析输入："杭州可人酒店"定位高端商务度假<br>
-                    2. 提取核心卖点：西湖景观、管家服务<br>
-                    3. 选择风格：温暖亲和（匹配酒店场景）<br>
-                    4. 生成三种长度文案适配不同渠道<br>
-                    5. 校验：短文案 ≤ 20字 ✅ | 长文案 100-200字 ✅ | 社交 ≤ 80字 ✅
-                  </div>
+          <div style="display:flex;gap:12px;margin-bottom:20px;flex-direction:row">
+            <div style="width:32px;height:32px;border-radius:50%;background:#E0F2FE;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🤖</div>
+            <div style="max-width:70%">
+              <div style="padding:12px 16px;border-radius:12px;background:var(--card);border:1px solid var(--border);font-size:14px;line-height:1.6">
+                <div style="margin-bottom:8px"><span style="font-size:12px;font-weight:600;color:var(--text-secondary)">📝 短文案</span><div style="font-size:14px;line-height:1.6;padding:8px 12px;background:var(--bg);border-radius:6px;margin-top:4px">西湖边的隐世桃源——杭州可人酒店，唤醒你心中的诗意。</div></div>
+                <div style="margin-bottom:8px"><span style="font-size:12px;font-weight:600;color:var(--text-secondary)">📄 长文案</span><div style="font-size:14px;line-height:1.6;padding:8px 12px;background:var(--bg);border-radius:6px;margin-top:4px">在西湖畔醒来，推窗即景。杭州可人酒店，坐落于西湖景区核心位置...</div></div>
+                <div style="margin-bottom:8px"><span style="font-size:12px;font-weight:600;color:var(--text-secondary)">📱 社交媒体文案</span><div style="font-size:14px;line-height:1.6;padding:8px 12px;background:var(--bg);border-radius:6px;margin-top:4px">终于住到了心心念念的杭州可人酒店！西湖景观绝了🌅</div></div>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                  <button class="btn btn-sm btn-success">✅ 确认发布</button>
+                  <button class="btn btn-sm btn-outline">🔄 重新生成</button>
+                </div>
+                <div style="font-size:12px;color:var(--secondary);cursor:pointer;margin-top:8px;user-select:none" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.nextElementSibling.classList.contains('show')?'🔍 收起思考过程 ▴':'🔍 查看思考过程 ▾'">🔍 查看思考过程 ▾</div>
+                <div style="display:none;margin-top:8px;padding:12px;background:#F1F5F9;border-radius:6px;font-size:12px;color:var(--text-secondary);line-height:1.6" class="thinking-content">
+                  <strong>推理步骤：</strong><br>1. 分析输入<br>2. 提取卖点：西湖景观、管家服务<br>3. 选择风格：温暖亲和<br>4. 生成三段文案<br>5. 校验通过 ✅
                 </div>
               </div>
-              <div class="chat-time">10:32 AM · 1,250 tokens</div>
+              <div style="font-size:11px;color:var(--text-disabled);margin-top:4px">10:32 AM · 1,250 tokens</div>
             </div>
           </div>
         </div>
-
-        <div>
-          <div class="chat-input-area">
-            <textarea class="chat-input" rows="1" placeholder="输入 @agent 指定 Agent，或直接描述任务..."></textarea>
+        <div style="margin-top:16px">
+          <div style="display:flex;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;align-items:flex-end">
+            <textarea style="flex:1;border:none;outline:none;font-size:14px;font-family:inherit;resize:none;min-height:40px;background:transparent" rows="1" placeholder="输入 @agent 指定 Agent，或直接描述任务..."></textarea>
             <button class="btn btn-primary btn-sm">➤</button>
           </div>
-          <div class="chat-input-hint">可用: @copywriter · @email_sorter · @xhs_poster · Enter 发送 · Shift+Enter 换行</div>
+          <div style="font-size:11px;color:var(--text-disabled);padding:4px 16px 0">可用: @copywriter · @email_sorter · @xhs_poster · Enter 发送</div>
         </div>
       </div>
     </div>
 
     <!-- ====== Agents ====== -->
     <div class="page" id="page-agents">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-        <p style="color:var(--text-secondary);font-size:13px">管理已安装的 Agent 插件，配置模型和启用状态</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <p style="color:var(--text-secondary);font-size:13px">管理已安装的 Agent 插件，配置运行参数</p>
         <button class="btn btn-primary" onclick="showToast('插件注册向导已打开')">+ 添加 Agent</button>
       </div>
-
       <div class="agent-grid">
         <div class="card agent-card">
-          <div class="agent-header">
-            <span class="agent-status online"></span>
-            <div>
-              <div class="agent-name">copywriter</div>
-              <div class="agent-summary">营销文案生成</div>
-            </div>
-          </div>
-          <div class="agent-meta">
-            <span>🤖 gemini-2.0-flash</span>
-            <span>⚡ 需 HITL</span>
-            <span>📊 今日 12 次</span>
-          </div>
-          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">Token 消耗: 3,450 · 费用: $0.009</div>
+          <div class="agent-header"><span class="agent-status online"></span><div><div class="agent-name">copywriter</div><div class="agent-summary">营销文案生成</div></div><span class="tag tag-green">● 在线</span></div>
+          <div class="agent-meta"><span>🤖 deepseek-v4-flash</span><span>⚡ 需 HITL</span><span>📊 今日 12 次</span><span>💰 1,250 tokens</span></div>
           <div class="agent-actions">
-            <button class="btn btn-sm btn-outline">⚙️ 配置</button>
-            <button class="btn btn-sm btn-outline">📊 详情</button>
-            <button class="btn btn-sm btn-outline" style="color:var(--danger)">🔌 禁用</button>
+            <button class="btn btn-sm btn-outline" onclick="openAgentConfig('copywriter','deepseek-v4-flash','marketing','营销文案生成')">⚙️ 配置</button>
+            <button class="btn btn-sm btn-outline" onclick="openAgentDetail('copywriter')">📊 详情</button>
+            <button class="btn btn-sm btn-danger" style="padding:6px 12px;font-size:12px;background:transparent;color:var(--danger);border:1px solid var(--danger);border-radius:8px;cursor:pointer">🔌 禁用</button>
           </div>
         </div>
-
         <div class="card agent-card">
-          <div class="agent-header">
-            <span class="agent-status online"></span>
-            <div>
-              <div class="agent-name">email_sorter</div>
-              <div class="agent-summary">邮件分类与回复建议</div>
-            </div>
-          </div>
-          <div class="agent-meta">
-            <span>🤖 gemini-2.0-flash</span>
-            <span>⚡ 需 HITL</span>
-            <span>📊 今日 8 次</span>
-          </div>
-          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">Token 消耗: 1,200 · 费用: $0.003</div>
+          <div class="agent-header"><span class="agent-status online"></span><div><div class="agent-name">email_sorter</div><div class="agent-summary">邮件分类与回复</div></div><span class="tag tag-green">● 在线</span></div>
+          <div class="agent-meta"><span>🤖 gemini-2.0-flash</span><span>⚡ 需 HITL</span><span>📊 今日 8 次</span><span>💰 340 tokens</span></div>
           <div class="agent-actions">
-            <button class="btn btn-sm btn-outline">⚙️ 配置</button>
-            <button class="btn btn-sm btn-outline">📊 详情</button>
-            <button class="btn btn-sm btn-outline" style="color:var(--danger)">🔌 禁用</button>
+            <button class="btn btn-sm btn-outline" onclick="openAgentConfig('email_sorter','gemini-2.0-flash','customer-service','邮件分类与回复')">⚙️ 配置</button>
+            <button class="btn btn-sm btn-outline" onclick="openAgentDetail('email_sorter')">📊 详情</button>
+            <button class="btn btn-sm" style="padding:6px 12px;font-size:12px;background:transparent;color:var(--danger);border:1px solid var(--danger);border-radius:8px;cursor:pointer">🔌 禁用</button>
           </div>
         </div>
-
         <div class="card agent-card">
-          <div class="agent-header">
-            <span class="agent-status online"></span>
-            <div>
-              <div class="agent-name">xhs_poster</div>
-              <div class="agent-summary">小红书种草笔记</div>
-            </div>
-          </div>
-          <div class="agent-meta">
-            <span>🤖 gemini-2.0-flash</span>
-            <span>⚡ 需 HITL</span>
-            <span>📊 今日 5 次</span>
-          </div>
-          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">Token 消耗: 2,100 · 费用: $0.005</div>
+          <div class="agent-header"><span class="agent-status online"></span><div><div class="agent-name">xhs_poster</div><div class="agent-summary">小红书种草笔记</div></div><span class="tag tag-green">● 在线</span></div>
+          <div class="agent-meta"><span>🤖 deepseek-v4-flash</span><span>⚡ 需 HITL</span><span>📊 今日 5 次</span><span>💰 2,100 tokens</span></div>
           <div class="agent-actions">
-            <button class="btn btn-sm btn-outline">⚙️ 配置</button>
-            <button class="btn btn-sm btn-outline">📊 详情</button>
-            <button class="btn btn-sm btn-outline" style="color:var(--danger)">🔌 禁用</button>
+            <button class="btn btn-sm btn-outline" onclick="openAgentConfig('xhs_poster','deepseek-v4-flash','social-media','小红书种草笔记')">⚙️ 配置</button>
+            <button class="btn btn-sm btn-outline" onclick="openAgentDetail('xhs_poster')">📊 详情</button>
+            <button class="btn btn-sm" style="padding:6px 12px;font-size:12px;background:transparent;color:var(--danger);border:1px solid var(--danger);border-radius:8px;cursor:pointer">🔌 禁用</button>
           </div>
         </div>
-
         <div class="card agent-card">
-          <div class="agent-header">
-            <span class="agent-status online"></span>
-            <div>
-              <div class="agent-name">competitive_analysis</div>
-              <div class="agent-summary">竞品 SWOT 分析</div>
-            </div>
-          </div>
-          <div class="agent-meta">
-            <span>🤖 deepseek-chat</span>
-            <span>✅ 无需 HITL</span>
-            <span>📊 今日 3 次</span>
-          </div>
-          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">Token 消耗: 4,500 · 费用: $0.011</div>
+          <div class="agent-header"><span class="agent-status online"></span><div><div class="agent-name">competitive_analysis</div><div class="agent-summary">竞品 SWOT 分析</div></div><span class="tag tag-green">● 在线</span></div>
+          <div class="agent-meta"><span>🤖 deepseek-v4-flash</span><span>✅ 无需 HITL</span><span>📊 今日 3 次</span><span>💰 4,500 tokens</span></div>
           <div class="agent-actions">
-            <button class="btn btn-sm btn-outline">⚙️ 配置</button>
-            <button class="btn btn-sm btn-outline">📊 详情</button>
-            <button class="btn btn-sm btn-outline" style="color:var(--danger)">🔌 禁用</button>
+            <button class="btn btn-sm btn-outline" onclick="openAgentConfig('competitive_analysis','deepseek-v4-flash','analysis','竞品 SWOT 分析')">⚙️ 配置</button>
+            <button class="btn btn-sm btn-outline" onclick="openAgentDetail('competitive_analysis')">📊 详情</button>
+            <button class="btn btn-sm" style="padding:6px 12px;font-size:12px;background:transparent;color:var(--danger);border:1px solid var(--danger);border-radius:8px;cursor:pointer">🔌 禁用</button>
           </div>
         </div>
-
         <div class="card agent-card">
-          <div class="agent-header">
-            <span class="agent-status online"></span>
-            <div>
-              <div class="agent-name">meeting_minutes</div>
-              <div class="agent-summary">会议纪要整理</div>
-            </div>
-          </div>
-          <div class="agent-meta">
-            <span>🤖 deepseek-chat</span>
-            <span>✅ 无需 HITL</span>
-            <span>📊 今日 1 次</span>
-          </div>
-          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">Token 消耗: 2,800 · 费用: $0.007</div>
+          <div class="agent-header"><span class="agent-status online"></span><div><div class="agent-name">meeting_minutes</div><div class="agent-summary">会议纪要整理</div></div><span class="tag tag-green">● 在线</span></div>
+          <div class="agent-meta"><span>🤖 deepseek-v4-flash</span><span>✅ 无需 HITL</span><span>📊 今日 1 次</span><span>💰 2,800 tokens</span></div>
           <div class="agent-actions">
-            <button class="btn btn-sm btn-outline">⚙️ 配置</button>
-            <button class="btn btn-sm btn-outline">📊 详情</button>
-            <button class="btn btn-sm btn-outline" style="color:var(--danger)">🔌 禁用</button>
+            <button class="btn btn-sm btn-outline" onclick="openAgentConfig('meeting_minutes','deepseek-v4-flash','productivity','会议纪要整理')">⚙️ 配置</button>
+            <button class="btn btn-sm btn-outline" onclick="openAgentDetail('meeting_minutes')">📊 详情</button>
+            <button class="btn btn-sm" style="padding:6px 12px;font-size:12px;background:transparent;color:var(--danger);border:1px solid var(--danger);border-radius:8px;cursor:pointer">🔌 禁用</button>
           </div>
         </div>
       </div>
@@ -594,12 +427,12 @@ a { text-decoration: none; color: inherit; }
 
     <!-- ====== Usage ====== -->
     <div class="page" id="page-usage">
-      <div class="usage-header">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
         <div>
           <h3 style="font-size:16px;font-weight:600">Token 用量与费用</h3>
-          <p style="font-size:13px;color:var(--text-secondary)">实时追踪各 Agent 的资源消耗</p>
+          <p style="font-size:13px;color:var(--text-secondary)">按 Agent / 模型 / 时间多维度追踪</p>
         </div>
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-sm btn-outline">7 天</button>
           <button class="btn btn-sm btn-primary">30 天</button>
           <button class="btn btn-sm btn-outline">📥 导出</button>
@@ -607,182 +440,392 @@ a { text-decoration: none; color: inherit; }
       </div>
 
       <div class="stats-grid" style="margin-bottom:20px">
-        <div class="card stat-card">
-          <div class="value" style="font-size:22px">124,500</div>
-          <div class="label">总 Token</div>
-          <div class="trend trend-up">↑ 12% 较上月</div>
+        <div class="card stat-card"><div class="value" style="font-size:22px">124,500</div><div class="label">总 Token</div><div class="trend trend-up">↑ 12% 较上月</div></div>
+        <div class="card stat-card"><div class="value" style="font-size:22px">$3.12</div><div class="label">总费用</div><div class="trend trend-neutral">预算内 ✅</div></div>
+        <div class="card stat-card"><div class="value" style="font-size:22px">2,650</div><div class="label">平均/任务</div><div class="trend trend-down">↓ 5%</div></div>
+        <div class="card stat-card"><div class="value" style="font-size:22px">87%</div><div class="label">缓存命中率</div><div class="trend trend-up">↑ 缓存优化</div></div>
+      </div>
+
+      <!-- Tabs: By Agent / By Model -->
+      <div style="display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--border)">
+        <div class="tab-item active" style="padding:10px 20px;cursor:pointer;border-bottom:2px solid var(--primary);margin-bottom:-2px;font-weight:600;font-size:14px;color:var(--primary)" onclick="switchUsageTab(this,'by-agent')">按 Agent</div>
+        <div class="tab-item" style="padding:10px 20px;cursor:pointer;font-weight:500;font-size:14px;color:var(--text-secondary)" onclick="switchUsageTab(this,'by-model')">按模型</div>
+      </div>
+
+      <!-- Per-Agent view -->
+      <div class="usage-view" id="usage-by-agent">
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px">
+            <span style="font-weight:600;font-size:14px">Token 趋势 (按 Agent 堆叠)</span>
+            <span style="font-size:12px;color:var(--text-secondary)">最近 30 天</span>
+          </div>
+          <div class="chart-area" id="chartAgent">
+            <script>document.write([35,42,28,55,48,62,45,38,52,58,44,39,65,51,43,38,56,72,58,44,50,68,55,72,82,68,75,90,78,85].map((v,i)=>{
+              const colors=['#0891B2','#F59E0B','#10B981','#8B5CF6','#EF4444'];
+              return `<div class="chart-bar-group"><div class="chart-stack">${colors.map((c,j)=>{
+                const h=Math.max(2,v/90*160/colors.length*(0.5+Math.random()*0.5));
+                return `<div class="chart-stack-bar" style="height:${h}px;background:${c};width:${100/colors.length}%"></div>`;
+              }).join('')}</div><span style="font-size:9px;color:var(--text-disabled)">${i%5===0?i+1:''}</span></div>`;
+            }).join(''));</script>
+          </div>
         </div>
-        <div class="card stat-card">
-          <div class="value" style="font-size:22px">$3.12</div>
-          <div class="label">总费用</div>
-          <div class="trend trend-neutral">预算内</div>
-        </div>
-        <div class="card stat-card">
-          <div class="value" style="font-size:22px">2,650</div>
-          <div class="label">平均/任务</div>
-          <div class="trend trend-down">↓ 5%</div>
-        </div>
-        <div class="card stat-card">
-          <div class="value" style="font-size:22px">89%</div>
-          <div class="label">缓存命中率</div>
-          <div class="trend trend-up">↑ 引入缓存后</div>
+
+        <div class="card" style="margin-bottom:16px">
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:12px">Agent 用量排行</h3>
+          <table class="data-table">
+            <thead><tr><th>Agent</th><th>模型</th><th>调用</th><th>输入 Token</th><th>输出 Token</th><th>费用</th><th>占比</th></tr></thead>
+            <tbody>
+              <tr><td><strong>copywriter</strong></td><td><span class="tag tag-blue">deepseek-v4-flash</span></td><td>156</td><td class="mono">45,200</td><td class="mono">28,300</td><td class="mono">$1.42</td><td><div class="bar-cell"><div class="mini-bar"><div class="mini-bar-fill" style="width:80%"></div></div>80%</div></td></tr>
+              <tr><td><strong>xhs_poster</strong></td><td><span class="tag tag-purple">deepseek-v4-flash</span></td><td>67</td><td class="mono">32,100</td><td class="mono">19,800</td><td class="mono">$0.99</td><td><div class="bar-cell"><div class="mini-bar"><div class="mini-bar-fill" style="width:55%"></div></div>55%</div></td></tr>
+              <tr><td><strong>competitive_analysis</strong></td><td><span class="tag tag-blue">deepseek-v4-flash</span></td><td>23</td><td class="mono">18,500</td><td class="mono">12,400</td><td class="mono">$0.62</td><td><div class="bar-cell"><div class="mini-bar"><div class="mini-bar-fill" style="width:35%"></div></div>35%</div></td></tr>
+              <tr><td><strong>email_sorter</strong></td><td><span class="tag tag-yellow">gemini-2.0-flash</span></td><td>89</td><td class="mono">12,400</td><td class="mono">8,100</td><td class="mono">$0.41</td><td><div class="bar-cell"><div class="mini-bar"><div class="mini-bar-fill" style="width:28%"></div></div>28%</div></td></tr>
+              <tr><td><strong>meeting_minutes</strong></td><td><span class="tag tag-blue">deepseek-v4-flash</span></td><td>12</td><td class="mono">6,800</td><td class="mono">4,200</td><td class="mono">$0.21</td><td><div class="bar-cell"><div class="mini-bar"><div class="mini-bar-fill" style="width:15%"></div></div>15%</div></td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <div class="card" style="margin-bottom:20px">
-        <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-          <span style="font-weight:600;font-size:14px">每日 Token 趋势</span>
-          <span style="font-size:12px;color:var(--text-secondary)">最近 30 天</span>
+      <!-- Per-Model view -->
+      <div class="usage-view" id="usage-by-model" style="display:none">
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px">
+            <span style="font-weight:600;font-size:14px">Token 趋势 (按模型堆叠)</span>
+            <span style="font-size:12px;color:var(--text-secondary)">最近 30 天</span>
+          </div>
+          <div class="chart-area" id="chartModel">
+            <script>document.write([35,42,28,55,48,62,45,38,52,58,44,39,65,51,43,38,56,72,58,44,50,68,55,72,82,68,75,90,78,85].map((v,i)=>{
+              const colors=['#0891B2','#F59E0B','#10B981'];
+              return `<div class="chart-bar-group"><div class="chart-stack">${colors.map((c,j)=>{
+                const h=Math.max(2,v/90*160/colors.length*(0.3+Math.random()*0.7));
+                return `<div class="chart-stack-bar" style="height:${h}px;background:${c};width:${100/colors.length}%"></div>`;
+              }).join('')}</div><span style="font-size:9px;color:var(--text-disabled)">${i%5===0?i+1:''}</span></div>`;
+            }).join(''));</script>
+          </div>
         </div>
-        <div class="chart-placeholder" id="chartBars"></div>
+
+        <div class="card">
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:12px">模型用量明细</h3>
+          <table class="data-table">
+            <thead><tr><th>模型</th><th>Provider</th><th>使用 Agent</th><th>调用</th><th>输入 Token</th><th>输出 Token</th><th>费用</th><th>占比</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="tag tag-blue">deepseek-v4-flash</span></td>
+                <td><span style="font-size:12px">DeepSeek</span></td>
+                <td>copywriter, xhs_poster, competitive_analysis, meeting_minutes</td>
+                <td>258</td>
+                <td class="mono">102,600</td>
+                <td class="mono">64,700</td>
+                <td class="mono">$2.24</td>
+                <td><div class="bar-cell"><div class="mini-bar"><div class="mini-bar-fill" style="width:72%;background:var(--secondary)"></div></div>72%</div></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-yellow">gemini-2.0-flash</span></td>
+                <td><span style="font-size:12px">Google</span></td>
+                <td>email_sorter</td>
+                <td>89</td>
+                <td class="mono">12,400</td>
+                <td class="mono">8,100</td>
+                <td class="mono">$0.41</td>
+                <td><div class="bar-cell"><div class="mini-bar"><div class="mini-bar-fill" style="width:13%;background:var(--accent)"></div></div>13%</div></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-green">gpt-4o-mini</span></td>
+                <td><span style="font-size:12px">OpenAI</span></td>
+                <td>— (备用)</td>
+                <td>15</td>
+                <td class="mono">4,500</td>
+                <td class="mono">2,800</td>
+                <td class="mono">$0.08</td>
+                <td><div class="bar-cell"><div class="mini-bar"><div class="mini-bar-fill" style="width:5%;background:var(--success)"></div></div>5%</div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div class="card">
-        <h3 style="font-size:14px;font-weight:600;margin-bottom:12px">Agent 用量排行</h3>
-        <table class="usage-table">
-          <thead>
-            <tr><th>Agent</th><th>调用次数</th><th>输入 Token</th><th>输出 Token</th><th>费用</th><th>占比</th></tr>
-          </thead>
-          <tbody>
-            <tr><td><strong>copywriter</strong></td><td>156</td><td class="mono">45,200</td><td class="mono">28,300</td><td class="mono">$1.42</td><td><div class="bar-cell"><div class="mini-bar"><div class="mini-bar-fill" style="width:80%"></div></div>80%</div></td></tr>
-            <tr><td><strong>xhs_poster</strong></td><td>67</td><td class="mono">32,100</td><td class="mono">19,800</td><td class="mono">$0.99</td><td><div class="bar-cell"><div class="mini-bar"><div class="mini-bar-fill" style="width:55%"></div></div>55%</div></td></tr>
-            <tr><td><strong>competitive_analysis</strong></td><td>23</td><td class="mono">18,500</td><td class="mono">12,400</td><td class="mono">$0.62</td><td><div class="bar-cell"><div class="mini-bar"><div class="mini-bar-fill" style="width:35%"></div></div>35%</div></td></tr>
-            <tr><td><strong>email_sorter</strong></td><td>89</td><td class="mono">12,400</td><td class="mono">8,100</td><td class="mono">$0.41</td><td><div class="bar-cell"><div class="mini-bar"><div class="mini-bar-fill" style="width:28%"></div></div>28%</div></td></tr>
-            <tr><td><strong>meeting_minutes</strong></td><td>12</td><td class="mono">6,800</td><td class="mono">4,200</td><td class="mono">$0.21</td><td><div class="bar-cell"><div class="mini-bar"><div class="mini-bar-fill" style="width:15%"></div></div>15%</div></td></tr>
-          </tbody>
-        </table>
+      <div style="margin-top:16px;font-size:12px;color:var(--text-disabled);display:flex;gap:24px;flex-wrap:wrap">
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--secondary);margin-right:4px"></span> deepseek-v4-flash</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--accent);margin-right:4px"></span> gemini-2.0-flash</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--success);margin-right:4px"></span> gpt-4o-mini</span>
       </div>
     </div>
 
-    <!-- ====== Settings ====== -->
+    <!-- ====== Settings (Multi-Model) ====== -->
     <div class="page" id="page-settings">
-      <p style="color:var(--text-secondary);font-size:13px;margin-bottom:24px">配置系统参数、模型连接和存储后端。修改后点击保存生效。</p>
+      <p style="color:var(--text-secondary);font-size:13px;margin-bottom:24px">管理多个模型连接、配置系统参数和存储后端。</p>
 
-      <div class="card settings-section">
-        <h3>🤖 模型配置</h3>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Provider</label>
-            <select class="form-input">
-              <option selected>deepseek</option>
-              <option>openai</option>
-              <option>qwen</option>
-              <option>kimi</option>
-              <option>claude</option>
-              <option>gemini</option>
-            </select>
+      <!-- Multi-Model Management -->
+      <div class="card" style="margin-bottom:24px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+          <h3 style="font-size:15px;font-weight:600">🤖 可用模型</h3>
+          <button class="btn btn-sm btn-primary" onclick="showAddModelForm()">+ 添加模型</button>
+        </div>
+
+        <!-- Model list -->
+        <div id="modelList">
+          <div class="model-card" data-id="1">
+            <div class="model-icon" style="background:#DBEAFE;color:var(--secondary)">D</div>
+            <div class="model-info">
+              <div class="model-name">deepseek-v4-flash <span class="tag tag-green">默认</span></div>
+              <div class="model-provider">DeepSeek · api.deepseek.com</div>
+            </div>
+            <div class="model-status"><span class="tag tag-green">● 可用</span></div>
+            <div class="model-actions">
+              <button class="btn-ghost" onclick="editModel(this)">✏️</button>
+              <button class="btn-ghost" style="color:var(--danger)" onclick="deleteModel(this)">🗑️</button>
+            </div>
           </div>
-          <div class="form-group">
-            <label>模型名称</label>
-            <input class="form-input" value="deepseek-v4-flash">
+          <div class="model-card" data-id="2">
+            <div class="model-icon" style="background:#FEF3C7;color:var(--accent)">G</div>
+            <div class="model-info">
+              <div class="model-name">gemini-2.0-flash <span class="tag tag-blue">备用</span></div>
+              <div class="model-provider">Google · generativelanguage.googleapis.com</div>
+            </div>
+            <div class="model-status"><span class="tag tag-green">● 可用</span></div>
+            <div class="model-actions">
+              <button class="btn-ghost" onclick="editModel(this)">✏️</button>
+              <button class="btn-ghost" style="color:var(--danger)" onclick="deleteModel(this)">🗑️</button>
+            </div>
+          </div>
+          <div class="model-card" data-id="3">
+            <div class="model-icon" style="background:#D1FAE5;color:var(--success)">O</div>
+            <div class="model-info">
+              <div class="model-name">gpt-4o-mini <span class="tag tag-yellow">低成本</span></div>
+              <div class="model-provider">OpenAI · api.openai.com</div>
+            </div>
+            <div class="model-status"><span class="tag tag-green">● 可用</span></div>
+            <div class="model-actions">
+              <button class="btn-ghost" onclick="editModel(this)">✏️</button>
+              <button class="btn-ghost" style="color:var(--danger)" onclick="deleteModel(this)">�️</button>
+            </div>
           </div>
         </div>
-        <div class="form-group">
-          <label>API 地址</label>
-          <input class="form-input" value="https://api.deepseek.com">
-          <div class="form-hint">留空自动使用 provider 默认地址</div>
-        </div>
-        <div class="form-group">
-          <label>API Key</label>
-          <input class="form-input" type="password" value="sk-xxxxxxxxxxxxxxxx">
-          <div class="form-hint">密钥仅存储在本地，不会上传</div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Temperature</label>
-            <input class="form-input" value="0.3">
+
+        <!-- Add/Edit Model Form -->
+        <div id="modelForm" style="display:none;margin-top:16px;padding:16px;background:var(--bg);border-radius:var(--radius-sm)">
+          <h4 style="font-size:14px;font-weight:600;margin-bottom:12px" id="modelFormTitle">添加模型</h4>
+          <input type="hidden" id="editModelId" value="">
+          <div class="form-row">
+            <div class="form-group"><label>Provider</label>
+              <select class="form-input" id="modelProvider" onchange="autoFillURL()">
+                <option value="">— 选择 Provider —</option>
+                <option value="openai">OpenAI</option>
+                <option value="deepseek">DeepSeek</option>
+                <option value="qwen">通义千问 (Qwen)</option>
+                <option value="kimi">Kimi (Moonshot)</option>
+                <option value="claude">Claude (Anthropic)</option>
+                <option value="gemini">Gemini (Google)</option>
+              </select>
+            </div>
+            <div class="form-group"><label>模型名称</label><input class="form-input" id="modelName" placeholder="如 deepseek-chat, gpt-4o"></div>
           </div>
-          <div class="form-group">
-            <label>Max Tokens</label>
-            <input class="form-input" value="4096">
+          <div class="form-group"><label>API 地址</label><input class="form-input" id="modelURL" placeholder="留空自动填充"></div>
+          <div class="form-group"><label>API Key</label><input class="form-input" type="password" id="modelKey" placeholder="sk-..."></div>
+          <div class="form-row">
+            <div class="form-group"><label>Temperature</label><input class="form-input" id="modelTemp" value="0.3"></div>
+            <div class="form-group"><label>Max Tokens</label><input class="form-input" id="modelMaxTokens" value="4096"></div>
           </div>
-        </div>
-        <div class="form-actions">
-          <button class="btn btn-primary" onclick="showToast('模型配置已保存')">💾 保存</button>
-          <button class="btn btn-outline">↩️ 重置</button>
+          <div class="form-actions">
+            <button class="btn btn-primary btn-sm" onclick="saveModel()">💾 保存</button>
+            <button class="btn btn-outline btn-sm" onclick="cancelModelForm()">取消</button>
+          </div>
         </div>
       </div>
 
-      <div class="card settings-section">
-        <h3>🧠 记忆配置</h3>
-        <div class="form-group">
-          <label>存储后端</label>
-          <select class="form-input">
-            <option selected>嵌入式文件存储</option>
-            <option>PostgreSQL + pgvector</option>
-          </select>
-        </div>
+      <!-- Memory Config -->
+      <div class="card" style="margin-bottom:24px">
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:16px">🧠 记忆配置</h3>
+        <div class="form-group"><label>存储后端</label><select class="form-input"><option>嵌入式文件存储</option><option>PostgreSQL + pgvector</option></select></div>
         <div class="form-row">
-          <div class="form-group">
-            <label>Top-K 检索数</label>
-            <input class="form-input" value="5">
-          </div>
-          <div class="form-group">
-            <label>相似度阈值</label>
-            <input class="form-input" value="0.7">
-          </div>
+          <div class="form-group"><label>Top-K 检索数</label><input class="form-input" value="5"></div>
+          <div class="form-group"><label>相似度阈值</label><input class="form-input" value="0.7"></div>
         </div>
-        <div class="form-actions">
-          <button class="btn btn-primary" onclick="showToast('记忆配置已保存')">💾 保存</button>
-        </div>
+        <div class="form-actions"><button class="btn btn-primary">💾 保存</button></div>
       </div>
 
-      <div class="card settings-section">
-        <h3>🔧 系统操作</h3>
+      <!-- System Actions -->
+      <div class="card">
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:16px">🔧 系统操作</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-outline" onclick="showToast('配置已重载')">🔄 重载配置</button>
           <button class="btn btn-outline" onclick="showToast('数据已导出')">📥 导出数据</button>
-          <button class="btn btn-danger" onclick="showToast('缓存已清除')">🗑️ 清除缓存</button>
+          <button class="btn btn-danger" onclick="showToast('缓存已清除')" style="padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;background:transparent;color:var(--danger);border:1px solid var(--danger)">🗑️ 清除缓存</button>
         </div>
-        <div style="margin-top:16px;font-size:12px;color:var(--text-secondary)">
-          OPC-Agent v0.1.0 · 运行时间: 3d 12h 45m · 构建: dev
-        </div>
+        <div style="margin-top:16px;font-size:12px;color:var(--text-secondary)">OPC-Agent v0.1.0 · 运行时间: 3d 12h 45m · 3 个模型已注册</div>
       </div>
     </div>
 
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-// Generate chart bars
-(function() {
-  const container = document.getElementById('chartBars');
-  if (!container) return;
-  const values = [35, 42, 28, 55, 48, 62, 45, 38, 52, 58, 44, 39, 65, 51, 43, 38, 56, 72, 58, 44, 50, 68, 55, 72, 82, 68, 75, 90, 78, 85];
-  const max = Math.max(...values);
-  values.forEach(v => {
-    const bar = document.createElement('div');
-    bar.className = 'chart-bar';
-    bar.style.height = (v / max * 160) + 'px';
-    container.appendChild(bar);
-  });
-})();
-
+// ===== Navigation =====
 function navigate(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const idx = {dashboard:0, chat:1, agents:2, usage:3, settings:4};
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const idx={dashboard:0,chat:1,agents:2,usage:3,settings:4};
   document.querySelectorAll('.nav-item')[idx[page]].classList.add('active');
-  const titles = {dashboard:'总览', chat:'对话', agents:'Agent 管理', usage:'用量统计', settings:'系统设置'};
-  document.getElementById('pageTitle').textContent = titles[page];
+  const titles={dashboard:'总览',chat:'对话',agents:'Agent 管理',usage:'用量统计',settings:'系统设置'};
+  document.getElementById('pageTitle').textContent=titles[page];
   document.getElementById('sidebar').classList.remove('open');
 }
 
-function toggleThinking(el) {
-  const content = el.nextElementSibling;
-  content.classList.toggle('show');
-  el.textContent = content.classList.contains('show') ? '🔍 收起思考过程 ▴' : '🔍 查看思考过程 ▾';
+// ===== Usage Tab =====
+function switchUsageTab(el,view) {
+  document.querySelectorAll('.tab-item').forEach(t=>{t.style.color='var(--text-secondary)';t.style.fontWeight='500';t.style.borderBottom='2px solid transparent';});
+  el.style.color='var(--primary)';el.style.fontWeight='600';el.style.borderBottom='2px solid var(--primary)';
+  document.querySelectorAll('.usage-view').forEach(v=>v.style.display='none');
+  document.getElementById('usage-'+view).style.display='block';
 }
 
+// ===== Slide Panel =====
+function openSlidePanel(title,content) {
+  document.getElementById('panelTitle').textContent=title;
+  document.getElementById('panelBody').innerHTML=content;
+  document.getElementById('slidePanel').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+function closeSlidePanel() {
+  document.getElementById('slidePanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ===== Agent Config =====
+function openAgentConfig(name,model,category,summary) {
+  const models=`<option>deepseek-v4-flash</option><option>gemini-2.0-flash</option><option>gpt-4o-mini</option>`;
+  openSlidePanel('⚙️ '+name+' 配置',`
+    <div class="form-group"><label>Agent 名称</label><input class="form-input" value="${name}"></div>
+    <div class="form-group"><label>功能描述</label><input class="form-input" value="${summary}"></div>
+    <div class="form-group"><label>分配模型</label><select class="form-input">${models.replace('>'+model+'<',' selected>'+model+'<')}</select></div>
+    <div class="form-group"><label>System Prompt</label><textarea class="form-input" rows="4">你是专业的${summary}专家。</textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Temperature</label><input class="form-input" value="0.3"></div>
+      <div class="form-group"><label>Max Tokens</label><input class="form-input" value="4096"></div>
+    </div>
+    <div class="form-group"><label class="checkbox-label" style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" checked> 需要 HITL 确认</label></div>
+    <div class="form-group"><label>标签</label><div style="display:flex;gap:4px;flex-wrap:wrap"><span class="tag tag-blue">${category}</span><span class="tag tag-green">active</span></div></div>
+  `);
+}
+
+// ===== Agent Detail =====
+function openAgentDetail(name) {
+  document.getElementById('modalTitle').textContent='📊 '+name+' 详情';
+  document.getElementById('modalBody').innerHTML=`
+    <div class="detail-grid">
+      <div class="detail-item"><div class="label">状态</div><div class="value"><span class="tag tag-green">● 在线</span></div></div>
+      <div class="detail-item"><div class="label">模型</div><div class="value"><span class="tag tag-blue">deepseek-v4-flash</span></div></div>
+      <div class="detail-item"><div class="label">今日调用</div><div class="value" style="font-family:'JetBrains Mono',monospace">12 次</div></div>
+      <div class="detail-item"><div class="label">今日 Token</div><div class="value" style="font-family:'JetBrains Mono',monospace">1,250</div></div>
+      <div class="detail-item"><div class="label">成功率</div><div class="value">100%</div></div>
+      <div class="detail-item"><div class="label">平均耗时</div><div class="value">2.3s</div></div>
+      <div class="detail-item"><div class="label">创建时间</div><div class="value">2026-05-09</div></div>
+      <div class="detail-item"><div class="label">最后调用</div><div class="value">2 分钟前</div></div>
+    </div>
+    <h4 style="font-size:14px;font-weight:600;margin:20px 0 12px">最近调用记录</h4>
+    <div class="history-item" style="padding:10px 0;border-bottom:1px solid var(--border);font-size:13px">💬 杭州可人酒店推广文案 · 1,250 tokens · 5m ago</div>
+    <div class="history-item" style="padding:10px 0;border-bottom:1px solid var(--border);font-size:13px">💬 智能水杯新品文案 · 980 tokens · 1h ago</div>
+    <div class="history-item" style="padding:10px 0;font-size:13px">💬 会员日促销活动文案 · 2,100 tokens · 3h ago</div>
+  `;
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ===== Model CRUD =====
+let modelCounter=3;
+function showAddModelForm() {
+  document.getElementById('editModelId').value='';
+  document.getElementById('modelFormTitle').textContent='添加模型';
+  document.getElementById('modelProvider').value='';
+  document.getElementById('modelName').value='';
+  document.getElementById('modelURL').value='';
+  document.getElementById('modelKey').value='';
+  document.getElementById('modelTemp').value='0.3';
+  document.getElementById('modelMaxTokens').value='4096';
+  document.getElementById('modelForm').style.display='block';
+}
+function cancelModelForm() { document.getElementById('modelForm').style.display='none'; }
+
+const providerURLs={
+  openai:'https://api.openai.com',deepseek:'https://api.deepseek.com',
+  qwen:'https://dashscope.aliyuncs.com/compatible-mode',kimi:'https://api.moonshot.cn',
+  claude:'https://api.anthropic.com',gemini:'https://generativelanguage.googleapis.com'
+};
+function autoFillURL() {
+  const p=document.getElementById('modelProvider').value;
+  if(p && providerURLs[p]) document.getElementById('modelURL').value=providerURLs[p];
+}
+
+function saveModel() {
+  const provider=document.getElementById('modelProvider').value;
+  const name=document.getElementById('modelName').value;
+  const url=document.getElementById('modelURL').value;
+  const editId=document.getElementById('editModelId').value;
+  if(!name) { showToast('请输入模型名称');return; }
+
+  if(editId) {
+    const card=document.querySelector(`.model-card[data-id="${editId}"]`);
+    if(card) {
+      card.querySelector('.model-name').innerHTML=`${name} <span class="tag tag-blue">已编辑</span>`;
+      card.querySelector('.model-provider').textContent=`${provider||'自定义'} · ${url||'自定义地址'}`;
+    }
+    showToast('模型已更新');
+  } else {
+    modelCounter++;
+    const colors=['#DBEAFE','#FEF3C7','#D1FAE5','#F3E8FF','#FCE7F3'];
+    const icon=name.charAt(0).toUpperCase();
+    const colorIdx=(modelCounter-1)%colors.length;
+    const div=document.createElement('div');
+    div.className='model-card';div.dataset.id=modelCounter;
+    div.innerHTML=`
+      <div class="model-icon" style="background:${colors[colorIdx]};color:var(--text)">${icon}</div>
+      <div class="model-info"><div class="model-name">${name} <span class="tag tag-blue">新增</span></div>
+      <div class="model-provider">${provider||'自定义'} · ${url||'自定义地址'}</div></div>
+      <div class="model-status"><span class="tag tag-green">● 可用</span></div>
+      <div class="model-actions">
+        <button class="btn-ghost" onclick="editModel(this)">✏️</button>
+        <button class="btn-ghost" style="color:var(--danger)" onclick="deleteModel(this)">🗑️</button>
+      </div>`;
+    document.getElementById('modelList').appendChild(div);
+    showToast('模型已添加');
+  }
+  cancelModelForm();
+}
+
+function editModel(btn) {
+  const card=btn.closest('.model-card');
+  const name=card.querySelector('.model-name').childNodes[0].textContent.trim();
+  const providerText=card.querySelector('.model-provider').textContent;
+  const provider=providerText.split('·')[0].trim();
+  document.getElementById('editModelId').value=card.dataset.id;
+  document.getElementById('modelFormTitle').textContent='编辑模型';
+  document.getElementById('modelName').value=name;
+  // Try to match provider
+  for(const [k,v] of Object.entries(providerURLs)) {
+    if(provider.toLowerCase().includes(k)) document.getElementById('modelProvider').value=k;
+  }
+  document.getElementById('modelForm').style.display='block';
+  showToast('请修改模型信息后保存');
+}
+
+function deleteModel(btn) {
+  if(confirm('确定要删除此模型配置吗？')) {
+    btn.closest('.model-card').remove();
+    showToast('模型已删除');
+  }
+}
+
+// ===== Toast =====
 function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = '✅ ' + msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  const t=document.getElementById('toast');
+  t.textContent='✅ '+msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
 }
 </script>
 </body>
