@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=380">
+  <title>OPC-Agent</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>🤖 OPC-Agent</h1>
+      <span class="badge" id="statusBadge">● 就绪</span>
+    </header>
+
+    <div class="agent-row">
+      <select id="agentSelect" class="agent-select">
+        <option value="copywriter">✍️ 文案生成</option>
+        <option value="email_sorter">📧 邮件分类</option>
+        <option value="xhs_poster">📕 小红书</option>
+        <option value="competitive_analysis">📊 竞品分析</option>
+        <option value="meeting_minutes">📋 会议纪要</option>
+      </select>
+    </div>
+
+    <textarea id="inputText" placeholder="输入任务描述..." rows="3"></textarea>
+
+    <button id="submitBtn" class="btn btn-primary">➤ 执行</button>
+
+    <div id="statusMsg" class="status"></div>
+    <div id="resultBox" class="result-box"></div>
+    <div id="errorBox" class="error-box"></div>
+
+    <footer class="footer">
+      <a href="#" id="openOptions">⚙️ 设置</a>
+      <span id="tokenInfo" class="token-info"></span>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
