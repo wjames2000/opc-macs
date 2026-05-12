@@ -9,9 +9,16 @@ const agents = [
 ];
 
 function formatOutput(data, agentType) {
-  const m = (typeof data === 'object' && data !== null) ? data : {};
-  const s = (k) => m[k] || '';
-  const list = (k) => Array.isArray(m[k]) ? m[k] : [];
+  // Handle string data that might be JSON
+  if (typeof data === 'string') {
+    try { data = JSON.parse(data); } catch (e) { return data; }
+  }
+  // Handle null/undefined
+  if (!data || typeof data !== 'object') return String(data || '');
+
+  const m = data;
+  const s = (k) => typeof m[k] === 'string' ? m[k] : '';
+  const list = (k) => Array.isArray(m[k]) ? m[k].map(x => typeof x === 'object' ? JSON.stringify(x) : String(x)) : [];
 
   switch (agentType) {
     case 'copywriter':
