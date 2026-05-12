@@ -28,8 +28,8 @@ func NewApp() *App {
 	var client runtime.ModelClient
 	var cfg *config.Config
 
-	if data, err := os.ReadFile("../config.yaml"); err == nil {
-		if c, err := config.Load("../config.yaml"); err == nil {
+	if data, err := os.ReadFile("../config.dev.yaml"); err == nil {
+		if c, err := config.Load("../config.dev.yaml"); err == nil {
 			cfg = c
 			client, _ = agent.NewModelClient(cfg.Model.Provider, cfg.Model.APIBaseURL, cfg.Model.APIKey)
 		}
