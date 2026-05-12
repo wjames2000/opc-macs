@@ -19,7 +19,7 @@ export default function App() {
   useEffect(() => {
     // Get version from Go backend
     if (window.go?.main?.App?.GetVersion) {
-      window.go.main.App.GetVersion().then(setVersion).catch(() => {});
+      window.go.main.App.GetVersion().then(setVersion).catch(console.warn);
     }
   }, []);
 
