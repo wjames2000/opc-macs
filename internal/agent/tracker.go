@@ -86,6 +86,102 @@ func (t *TokenTracker) Summary() string {
 	return sb.String()
 }
 
+// ---- Structured data for desktop/web UI ----
+
+type AgentUsageItem struct {
+	Agent     string  `json:"agent"`
+	Model     string  `json:"model"`
+	Calls     int     `json:"calls"`
+	InTokens  int     `json:"in_tokens"`
+	OutTokens int     `json:"out_tokens"`
+	Cost      float64 `json:"cost"`
+}
+
+type ActivityItem struct {
+	Agent       string `json:"agent"`
+	InputTokens int    `json:"input_tokens"`
+	OutputTokens int   `json:"output_tokens"`
+	Time        string `json:"time"`
+	Success     bool   `json:"success"`
+}
+
+type TodayStats struct {
+	Calls   int `json:"calls"`
+	Tokens  int `json:"tokens"`
+}
+
+func (t *TokenTracker) AgentUsage() []AgentUsageItem {
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+
+	agentMap := make(map[string]*AgentUsageItem)
+	agentModel := make(map[string]string)
+
+	for _, c := range t.calls {
+		name := c.Agent
+		if name == "" {
+			name = "system"
+		}
+		if _, ok := agentMap[name]; !ok {
+			agentMap[name] = &AgentUsageItem{Agent: name}
+		}
+		agentMap[name].Calls++
+		agentMap[name].InTokens += c.InputTokens
+		agentMap[name].OutTokens += c.OutputTokens
+		if c.Model != "" {
+			agentModel[name] = c.Model
+		}
+	}
+
+	result := make([]AgentUsageItem, 0, len(agentMap))
+	for _, item := range agentMap {
+		item.Model = agentModel[item.Agent]
+		item.Cost = t.estimateCost(item.Model, item.InTokens, item.OutTokens)
+		result = append(result, *item)
+	}
+	return result
+}
+
+func (t *TokenTracker) RecentActivity(n int) []ActivityItem {
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+
+	if n <= 0 || len(t.calls) == 0 {
+		return []ActivityItem{}
+	}
+	start := len(t.calls) - n
+	if start < 0 {
+		start = 0
+	}
+	result := make([]ActivityItem, 0, n)
+	for i := start; i < len(t.calls); i++ {
+		c := t.calls[i]
+		result = append(result, ActivityItem{
+			Agent:        c.Agent,
+			InputTokens:  c.InputTokens,
+			OutputTokens: c.OutputTokens,
+			Time:         c.Time.Format("15:04:05"),
+			Success:      c.Success,
+		})
+	}
+	return result
+}
+
+func (t *TokenTracker) TodayStats() TodayStats {
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+
+	now := time.Now()
+	var stats TodayStats
+	for _, c := range t.calls {
+		if c.Time.Year() == now.Year() && c.Time.YearDay() == now.YearDay() {
+			stats.Calls++
+			stats.Tokens += c.InputTokens + c.OutputTokens
+		}
+	}
+	return stats
+}
+
 func (t *TokenTracker) RecentCalls(n int) string {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
