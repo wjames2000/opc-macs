@@ -1,8 +1,9 @@
 # OPC-Agent
 
-多任务智能协助系统 — 为 OPC（一人公司）创业者打造的 AI Agent 管理平台。
+多任务智能协助系统 — 为 OPC（一人公司）创业者打造的 AI 内容营销全链路平台。
 
 [![Go](https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go)](https://golang.org)
+[![Wails](https://img.shields.io/badge/Wails-v2-DF0000?logo=wails)](https://wails.io)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ---
@@ -16,9 +17,15 @@
 ✅ 工作流编排引擎              ✅ 结果缓存 (LRU+TTL)
 ✅ Docker 容器化               ✅ 配置热重载
 ✅ SaaS 多租户后端             ✅ React Web UI
-✅ pgvector 向量存储           ✅ 健康检查 API
-✅ 插件脚手架                  ✅ 输出格式化
+✅ pgvector 向量存储           ✅ Wails 桌面端 (macOS)
+✅ Chrome 扩展 (MV3)          ✅ 健康检查 API
+✅ 插件脚手架                  ✅ MCP Protocol 支持
+✅ 多平台内容发布              ✅ 自动互动运营
+✅ 视频脚本生成                ✅ 热点雷达
+✅ AI 标签推荐                 ✅ 内容交易市场
 ```
+
+---
 
 ## 快速开始
 
@@ -26,14 +33,21 @@
 # 前提: Go 1.26+, config.yaml 中配置 API Key
 git clone <repo> && cd opc-agent
 
-# 编译并运行 (CLI 模式)
+# CLI 模式
 make run
 
-# 或使用 Docker
+# 桌面端 (macOS)
+make desktop && open desktop/build/bin/OPC-Agent.app
+
+# Docker
 docker compose up -d
 ```
 
+---
+
 ## Agent 插件
+
+### 现有插件
 
 | 插件 | 技能 | 模型 | HITL | 说明 |
 |------|------|------|------|------|
@@ -42,6 +56,20 @@ docker compose up -d
 | xhs_poster | `#小红书` `@xhs_poster` | deepseek-v4-flash | ✅ | 小红书种草笔记 |
 | competitive_analysis | `#竞品` `@competitive` | deepseek-v4-flash | ✅ | SWOT 竞品分析 |
 | meeting_minutes | `#会议` `@meeting` | deepseek-v4-flash | ✅ | 会议纪要整理 |
+
+### 内容营销插件（规划中）
+
+| 插件 | 技能 | 说明 |
+|------|------|------|
+| publisher | `@publish` | 多平台一键发布（抖音/小红书/B站/YouTube 等 13+ 平台） |
+| engage | `@engage` | 跨平台自动互动运营（评论回复 / 品牌监测 / 热点雷达） |
+| content_creator | `@create` | AI 图片/视频生成（Midjourney / Seedance / Kling） |
+| video_script | `@script` | AI 视频脚本生成（含分镜 + 话术 + 画面建议） |
+| trend_radar | `@trend` | 热点趋势监测 + 选题推荐 |
+| tag_generator | `@tags` | AI 标签推荐（各平台标签策略优化） |
+| monetize | `@monetize` | 内容交易市场（接单 / 结算 / 提现） |
+
+---
 
 ## 使用方法
 
@@ -63,19 +91,27 @@ reload                热重载配置
 ### 工作流编排
 
 ```yaml
-# workflows/customer_complaint.yaml
+# workflows/hot_content_pipeline.yaml
 steps:
-  - id: classify
-    agent: email_sorter
-    input: "${trigger.input}"
-  - id: reply
-    agent: copywriter
-    input: "投诉内容：${classify.output}"
+  - id: trend
+    agent: trend_radar
+    input: "监测抖音和小红书热点，限美食赛道"
+  - id: script
+    agent: video_script
+    input: "根据热榜第一的话题，生成 60 秒抖音带货脚本"
+  - id: tags
+    agent: tag_generator
+    input: "为上一步脚本推荐最佳标签组合"
+  - id: publish
+    agent: publisher
+    input: "将内容发布到抖音和小红书"
 ```
 
 ```bash
-> run customer_complaint 产品有质量问题要求退款
+> run hot_content_pipeline 今日热点话题
 ```
+
+---
 
 ## 模型 Provider 支持
 
@@ -88,10 +124,12 @@ steps:
 | Claude (Anthropic) | claude-3-5-sonnet | api.anthropic.com |
 | Gemini (Google) | gemini-2.0-flash | generativelanguage.googleapis.com |
 
+---
+
 ## 部署
 
 ```bash
-# Docker
+# Docker (全栈)
 docker compose up -d
 
 # SaaS 服务 (需要 PostgreSQL)
@@ -100,49 +138,83 @@ createdb opc_saas
 
 # Web UI
 cd web && npm install && npm run dev
+
+# 桌面端 (macOS)
+cd desktop && wails dev
 ```
+
+---
 
 ## 项目结构
 
 ```
 ├── cmd/
-│   ├── opc-agent/           # CLI 主程序 (REPL 入口)
-│   └── saas-server/         # SaaS HTTP 服务 (多租户后端)
+│   ├── opc-agent/               # CLI 主程序 (REPL 入口)
+│   └── saas-server/             # SaaS HTTP 服务 (多租户后端)
 ├── internal/
-│   ├── agent/               # Router, Reviewer, Tracker, Cache, Session, ModelClient
-│   ├── config/              # 配置加载 (6 provider 默认端点)
-│   ├── harness/             # Harness 控制 (Role/State/Contract/Guardrail)
-│   ├── hitl/                # HITL 终端确认 (高风险操作拦截)
-│   ├── memory/              # 向量记忆引擎 + pgvector
-│   ├── plugins/             # 内置 Agent 插件注册 (内嵌模式)
-│   ├── runtime/             # Plugin 运行时 + Loader
-│   ├── saas/                # 多租户 SaaS 数据模型与 API
-│   └── workflow/            # 工作流编排引擎 (YAML→DAG)
-├── plugins/                 # Agent 插件源码 (编译为 .so 动态库)
-│   ├── copywriter/           # 文案生成 — 三段式营销文案
-│   ├── email_sorter/         # 邮件分类 — 分类+回复建议
-│   ├── xhs_poster/           # 小红书内容 — 种草笔记生成
-│   ├── competitive_analysis/ # 竞品分析 — SWOT 报告
-│   └── meeting_minutes/      # 会议纪要 — 结构化整理
-├── pkg/
-│   └── contracts/            # Agent 输入/输出 JSON Schema 契约
-├── workflows/               # 工作流定义 (YAML)
-├── web/                     # React Web UI (Vite + Tailwind + Recharts)
+│   ├── agent/                   # Router, Reviewer, Tracker, Cache, Session
+│   ├── config/                  # 配置加载 (6 provider 默认端点)
+│   ├── harness/                 # Harness 控制 (Role/State/Contract/Guardrail)
+│   ├── hitl/                    # HITL 终端确认 (高风险操作拦截)
+│   ├── memory/                  # 向量记忆引擎 + pgvector
+│   ├── mcp/                     # MCP Server (SSE 传输, Tool/Resource 暴露) [规划中]
+│   ├── platform/                # 多平台 SDK (抖音/小红书/YouTube 等) [规划中]
+│   ├── publish/                 # 发布引擎 (队列/重试/定时) [规划中]
+│   ├── engage/                  # 互动引擎 (自动回复/品牌监测/热点) [规划中]
+│   ├── plugins/                 # 内置 Agent 插件注册 (内嵌模式)
+│   ├── runtime/                 # Plugin 运行时 + Loader
+│   ├── saas/                    # 多租户 SaaS 数据模型与 API
+│   └── workflow/                # 工作流编排引擎 (YAML→DAG)
+├── plugins/                     # Agent 插件源码 (编译为 .so 动态库)
+│   ├── copywriter/              # 文案生成 — 三段式营销文案
+│   ├── email_sorter/            # 邮件分类 — 分类+回复建议
+│   ├── xhs_poster/              # 小红书内容 — 种草笔记生成
+│   ├── competitive_analysis/    # 竞品分析 — SWOT 报告
+│   └── meeting_minutes/         # 会议纪要 — 结构化整理
+├── desktop/                     # Wails 桌面端 (macOS)
+│   ├── app.go                   # Go 后端绑定 (GetDashboardStats, Execute 等)
+│   ├── frontend/                # React 前端 (Vite + Tailwind)
+│   │   ├── src/
+│   │   │   ├── App.jsx          # 5-Tab 导航壳 (Dashboard/Chat/Agents/Usage/Settings)
+│   │   │   ├── pages/           # 页面组件
+│   │   │   └── components/      # 通用 UI 组件
+│   │   └── wails.json
+│   └── build/                   # 编译产物 (.app 包)
+├── chrome-ext/                  # Chrome 扩展 (Manifest V3, 无需构建)
+│   ├── manifest.json
+│   ├── background.js            # Service Worker
+│   ├── content.js               # 内容注入脚本
+│   ├── popup/                   # 弹出窗口
+│   ├── options/                 # 选项页面
+│   └── icons/                   # 扩展图标
+├── web/                         # React Web UI (Vite + Tailwind + Recharts)
 │   ├── src/
-│   │   ├── components/      # UI 组件
-│   │   ├── pages/           # 页面路由
-│   │   ├── lib/             # 工具函数
-│   │   └── assets/          # 静态资源
+│   │   ├── components/          # UI 组件
+│   │   ├── pages/               # 7 个页面路由
+│   │   ├── lib/                 # 工具函数
+│   │   └── assets/              # 静态资源
 │   └── public/
-├── data/                    # 记忆持久化存储 (memory.json)
+├── pkg/
+│   └── contracts/               # Agent 输入/输出 JSON Schema 契约
+├── workflows/                   # 工作流定义 (YAML)
+├── data/                        # 记忆持久化存储 (memory.json)
 ├── scripts/
-│   └── create-plugin.sh     # 插件脚手架 (make new-plugin)
-├── docs/                    # 设计文档 + 高保真原型
-├── build/                   # 编译产物 (二进制 + .so 插件)
-├── Makefile                 # 构建 / 测试 / 运行 / 插件创建
-├── Dockerfile               # 多阶段构建 (Go → Alpine)
-└── docker-compose.yml       # 容器编排 (含健康检查)
+│   └── create-plugin.sh         # 插件脚手架 (make new-plugin)
+├── docs/                        # 设计文档 (15 份)
+│   ├── 01 项目需求说明书.md
+│   ├── ...
+│   ├── 12 内容营销升级需求说明书.md
+│   ├── 13 内容创作增强层需求说明书（Phase A）.md
+│   ├── 14 商业化变现层需求说明书（Phase C）.md
+│   └── 15 内容营销升级用户故事文档.md
+├── build/                       # 编译产物
+├── Makefile                     # 构建 / 测试 / 运行 / 插件创建
+├── Dockerfile                   # 多阶段构建 (Go → Alpine)
+├── docker-compose.yml           # 容器编排 (含健康检查)
+└── config.yaml                  # 主配置文件 (API Key / Provider / MCP 设置)
 ```
+
+---
 
 ## 开发
 
@@ -155,4 +227,34 @@ make test-all
 
 # 编译全部
 make all
+
+# 构建桌面端
+make desktop
+
+# 桌面端开发模式 (热重载)
+cd desktop && wails dev
 ```
+
+---
+
+## 版本历史
+
+| 版本 | 日期 | 亮点 |
+|------|------|------|
+| v0.2.0 | 2026-05 | Wails 桌面端、Chrome 扩展、SaaS 多租户、工作流引擎 |
+| v0.1.0 | 2026-04 | CLI MVP、5 个 Agent 插件、6 个模型 Provider、Docker |
+
+---
+
+## 路线图
+
+```
+Phase B ───→ Phase A ───→ Phase C
+(内容分发层)   (创作增强层)   (商业变现层)
+
+B: 多平台发布 + 自动互动 + MCP 协议 + AI 创作增强
+A: 视频脚本生成 + 热点雷达 + AI 标签推荐
+C: 内容交易市场 + 结算引擎 + 钱包提现
+```
+
+详见 [docs/12 内容营销升级需求说明书](./docs/12%20OPC-Agent%20%E5%86%85%E5%AE%B9%E8%90%A5%E9%94%80%E5%8D%87%E7%BA%A7%E9%9C%80%E6%B1%82%E8%AF%B4%E6%98%8E%E4%B9%A6.md)。

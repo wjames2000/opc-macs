@@ -13,8 +13,8 @@ type AppConfig struct {
 }
 
 type ModelConfig struct {
-	Provider    string  `yaml:"provider"`    // openai | deepseek | qwen | kimi | claude | gemini
-	Name        string  `yaml:"name"`        // 模型名（如 gpt-4o, deepseek-chat, qwen-turbo, claude-3.5-sonnet）
+	Provider    string  `yaml:"provider"` // openai | deepseek | qwen | kimi | claude | gemini
+	Name        string  `yaml:"name"`     // 模型名（如 gpt-4o, deepseek-chat, qwen-turbo, claude-3.5-sonnet）
 	Temperature float32 `yaml:"temperature"`
 	MaxTokens   int     `yaml:"max_tokens"`
 	APIBaseURL  string  `yaml:"api_base_url"` // 留空自动根据 provider 填充
@@ -59,12 +59,19 @@ type HarnessConfig struct {
 	ForbiddenWords   []string `yaml:"forbidden_words"`
 }
 
+type MCPSection struct {
+	Enabled   bool   `yaml:"enabled"`
+	Port      int    `yaml:"port"`
+	Transport string `yaml:"transport"`
+}
+
 type Config struct {
 	App     AppConfig     `yaml:"app"`
 	Model   ModelConfig   `yaml:"model"`
 	Runtime RuntimeConfig `yaml:"runtime"`
 	Memory  MemoryConfig  `yaml:"memory"`
 	Harness HarnessConfig `yaml:"harness"`
+	MCP     MCPSection    `yaml:"mcp"`
 }
 
 func Load(path string) (*Config, error) {
@@ -109,6 +116,12 @@ func (c *Config) Validate() error {
 	}
 	if c.Model.MaxTokens == 0 {
 		c.Model.MaxTokens = 4096
+	}
+	if c.MCP.Port == 0 {
+		c.MCP.Port = 8090
+	}
+	if c.MCP.Transport == "" {
+		c.MCP.Transport = "sse"
 	}
 	return nil
 }
