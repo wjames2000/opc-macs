@@ -11,6 +11,29 @@ import (
 	"github.com/wjames2000/opc-macs/internal/runtime"
 )
 
+func calculateScore(checks []runtime.CheckResult) float32 {
+	if len(checks) == 0 {
+		return 0
+	}
+	passed := 0
+	for _, c := range checks {
+		if c.Passed {
+			passed++
+		}
+	}
+	return float32(passed) / float32(len(checks)) * 100
+}
+
+func summaryStr(checks []runtime.CheckResult) string {
+	passed, total := 0, len(checks)
+	for _, c := range checks {
+		if c.Passed {
+			passed++
+		}
+	}
+	return fmt.Sprintf("%d/%d checks passed", passed, total)
+}
+
 func RegisterAll(loader *runtime.Loader) error {
 	agents := []runtime.AgentPlugin{
 		&CopywriterPlugin{},
@@ -18,6 +41,14 @@ func RegisterAll(loader *runtime.Loader) error {
 		&XHSPosterPlugin{},
 		&CompetitiveAnalysisPlugin{},
 		&MeetingMinutesPlugin{},
+		&PublisherPlugin{},
+		&EngagePlugin{},
+		&ContentCreatorPlugin{},
+		&VideoScriptPlugin{},
+		&TagGeneratorPlugin{},
+		&TrendRadarPlugin{},
+		&BatchPlugin{},
+		&RewritePlugin{},
 	}
 	for _, a := range agents {
 		if err := loader.Register(a); err != nil {
@@ -441,7 +472,7 @@ func (p *CompetitiveAnalysisPlugin) Execute(ctx context.Context, input string, o
 	}
 
 	return &runtime.ExecutionResult{
-		Data: output,
+		Data:       output,
 		TokenUsage: runtime.TokenUsage{InputTokens: resp.InputTokens, OutputTokens: resp.OutputTokens, ModelName: modelName},
 		RawTrace:   resp.RawResponse,
 	}, nil
@@ -524,7 +555,7 @@ func (p *MeetingMinutesPlugin) Execute(ctx context.Context, input string, opts m
 	}
 
 	return &runtime.ExecutionResult{
-		Data: output,
+		Data:       output,
 		TokenUsage: runtime.TokenUsage{InputTokens: resp.InputTokens, OutputTokens: resp.OutputTokens, ModelName: modelName},
 		RawTrace:   resp.RawResponse,
 	}, nil

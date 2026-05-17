@@ -1,12 +1,19 @@
 package runtime
 
-import "context"
+import (
+	"context"
+	"encoding/json"
+)
 
 type PluginInfo struct {
 	Name         string
 	Summary      string
+	Description  string
 	Version      string
 	Tags         []string
+	Capabilities []string
+	Category     string
+	Parameters   map[string]interface{}
 	RequiresHITL bool
 	ModelName    string // 可选：插件使用的模型名，为空则用系统默认
 }
@@ -59,6 +66,44 @@ type EmbedRequest struct {
 type EmbedResponse struct {
 	Embedding   []float32
 	InputTokens int
+}
+
+// ExecuteRequest is a structured request for plugin execution.
+type ExecuteRequest struct {
+	Parameters json.RawMessage `json:"parameters"`
+	Input      string          `json:"input"`
+	Context    map[string]any  `json:"context,omitempty"`
+}
+
+// ExecuteResponse is a structured response from plugin execution.
+type ExecuteResponse struct {
+	Plugin  string         `json:"plugin"`
+	Status  string         `json:"status"`
+	Message string         `json:"message,omitempty"`
+	Data    map[string]any `json:"data,omitempty"`
+	Error   string         `json:"error,omitempty"`
+}
+
+// ReviewRequest is a structured request for plugin review.
+type ReviewRequest struct {
+	Plugin     string          `json:"plugin"`
+	Parameters json.RawMessage `json:"parameters"`
+	Result     map[string]any  `json:"result"`
+}
+
+// ReviewResponse is a structured response from plugin review.
+type ReviewResponse struct {
+	Passed  bool          `json:"passed"`
+	Score   float64       `json:"score"`
+	Message string        `json:"message,omitempty"`
+	Issues  []ReviewIssue `json:"issues,omitempty"`
+}
+
+// ReviewIssue represents a single issue found during review.
+type ReviewIssue struct {
+	Severity string `json:"severity"` // "error", "warning", "suggestion"
+	Field    string `json:"field,omitempty"`
+	Message  string `json:"message"`
 }
 
 type ExecutionResult struct {

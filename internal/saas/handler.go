@@ -1,33 +1,141 @@
 package saas
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/wjames2000/opc-macs/internal/runtime"
 )
 
 type Server struct {
-	Tenants    *TenantStore
-	Users      *UserStore
-	Loader     *runtime.Loader
-	ModelKey   string // fallback model API key
-	ModelURL   string // fallback model base URL
+	Tenants          *TenantStore
+	Users            *UserStore
+	Loader           *runtime.Loader
+	ModelKey         string // fallback model API key
+	ModelURL         string // fallback model base URL
+	Marketplace      *MarketplaceHandlers
+	Wallet           *WalletHandler
+	Settlement       *SettlementHandler
+	Credit           *CreditHandler
+	Notify           *NotificationHandler
+	VideoScript      *VideoScriptHandler
+	Engage           *EngageHandler
+	TagGenerator     *TagGeneratorHandler
+	TrendRadar       *TrendRadarHandler
+	Delivery         *DeliveryHandler
+	Review           *ReviewHandler
+	Invite           *InviteHandler
+	Recommend        *RecommendationHandler
+	Invoice          *InvoiceHandler
+	PaymentMethod    *PaymentMethodHandler
+	ReportExport     *ReportExportHandler
+	FraudDetect      *FraudDetectionHandler
+	FraudAccount     *FraudAccountHandler
+	FraudContent     *FraudContentHandler
+	FraudAlert       *FraudAlertHandler
+	WithdrawPayment  *WithdrawPaymentHandler
+	AdvertiserReport *AdvertiserReportHandler
+	CreatorReport    *CreatorReportHandler
+	walletStore      *WalletStore
+	creditStore      *CreditStore
+	withdrawlStr     *WithdrawalStore
+	notifyStore      *NotificationStore
+	invoiceStore     *InvoiceStore
+	paymentMthdStr   *PaymentMethodStore
+	reportExpStr     *ReportExportStore
+	fraudDetStr      *FraudDetectionStore
+	fraudAcctStr     *FraudAccountStore
+	fraudContStr     *FraudContentStore
+	fraudAlrtStr     *FraudAlertStore
 }
 
 func NewServer(db *sql.DB, loader *runtime.Loader) (*Server, error) {
 	tenants := NewTenantStore(db)
 	users := NewUserStore(db)
+	marketplace := NewMarketplaceStore(db)
+	walletStr := NewWalletStore(db)
+	withdrStr := NewWithdrawalStore(db)
+	creditStr := NewCreditStore(db)
 
 	if err := tenants.InitSchema(); err != nil {
 		return nil, err
 	}
+	if err := marketplace.InitSchema(); err != nil {
+		return nil, err
+	}
+	if err := NewInviteHandler(marketplace).InitSchema(context.Background()); err != nil {
+		return nil, fmt.Errorf("invite schema: %w", err)
+	}
+	if err := walletStr.InitSchema(); err != nil {
+		return nil, err
+	}
+	if err := withdrStr.InitSchema(); err != nil {
+		return nil, err
+	}
+	if err := creditStr.InitSchema(); err != nil {
+		return nil, err
+	}
+	notifStr := NewNotificationStore(db)
+	if err := notifStr.InitSchema(); err != nil {
+		return nil, err
+	}
+	invoiceStr := NewInvoiceStore(db)
+	pmtMthdStr := NewPaymentMethodStore(db)
+	reportExpStr := NewReportExportStore(db)
+	fraudDetStr := NewFraudDetectionStore(db)
+	fraudAcctStr := NewFraudAccountStore(db)
+	fraudContStr := NewFraudContentStore(db)
+	fraudAlrtStr := NewFraudAlertStore(db)
+	withdrawPayStr := NewWithdrawPaymentStore(db)
+	advReportStr := NewAdvertiserReportStore(db)
+	creatorReportStr := NewCreatorReportStore(db)
+	platformAccStr := NewPlatformAccountStore(db)
+	if err := platformAccStr.InitSchema(); err != nil {
+		return nil, fmt.Errorf("platform account schema: %w", err)
+	}
+	lifecycle := NewOrderLifecycle(marketplace, walletStr)
 
 	return &Server{
-		Tenants: tenants,
-		Users:   users,
-		Loader:  loader,
+		Tenants:          tenants,
+		Users:            users,
+		Loader:           loader,
+		Marketplace:      NewMarketplaceHandlers(marketplace),
+		Wallet:           NewWalletHandler(walletStr, withdrStr),
+		Settlement:       NewSettlementHandler(),
+		Credit:           NewCreditHandler(creditStr),
+		Notify:           NewNotificationHandler(notifStr, lifecycle),
+		VideoScript:      NewVideoScriptHandler(loader),
+		Engage:           NewEngageHandler(loader),
+		TagGenerator:     NewTagGeneratorHandler(loader),
+		TrendRadar:       NewTrendRadarHandler(loader),
+		Delivery:         NewDeliveryHandler(marketplace),
+		Review:           NewReviewHandler(marketplace),
+		Invite:           NewInviteHandler(marketplace),
+		Recommend:        NewRecommendationHandler(marketplace),
+		Invoice:          NewInvoiceHandler(invoiceStr),
+		PaymentMethod:    NewPaymentMethodHandler(pmtMthdStr),
+		ReportExport:     NewReportExportHandler(reportExpStr),
+		FraudDetect:      NewFraudDetectionHandler(fraudDetStr),
+		FraudAccount:     NewFraudAccountHandler(fraudAcctStr),
+		FraudContent:     NewFraudContentHandler(fraudContStr),
+		FraudAlert:       NewFraudAlertHandler(fraudAlrtStr),
+		WithdrawPayment:  NewWithdrawPaymentHandler(withdrawPayStr),
+		AdvertiserReport: NewAdvertiserReportHandler(advReportStr),
+		CreatorReport:    NewCreatorReportHandler(creatorReportStr),
+		walletStore:      walletStr,
+		creditStore:      creditStr,
+		withdrawlStr:     withdrStr,
+		notifyStore:      notifStr,
+		invoiceStore:     invoiceStr,
+		paymentMthdStr:   pmtMthdStr,
+		reportExpStr:     reportExpStr,
+		fraudDetStr:      fraudDetStr,
+		fraudAcctStr:     fraudAcctStr,
+		fraudContStr:     fraudContStr,
+		fraudAlrtStr:     fraudAlrtStr,
 	}, nil
 }
 
@@ -153,8 +261,8 @@ func (s *Server) HandleRecordUsage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse(w, 200, map[string]interface{}{
-		"recorded":   true,
-		"cost":       cost,
+		"recorded":      true,
+		"cost":          cost,
 		"input_tokens":  req.InputTokens,
 		"output_tokens": req.OutputTokens,
 	})
@@ -191,11 +299,11 @@ func (s *Server) HandleUsageSummary(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse(w, 200, map[string]interface{}{
-		"tenant_id":     tenantID,
-		"total_tokens":  totalTokens,
-		"total_cost":    totalCost,
-		"call_count":    callCount,
-		"quota_limit":   limit,
+		"tenant_id":      tenantID,
+		"total_tokens":   totalTokens,
+		"total_cost":     totalCost,
+		"call_count":     callCount,
+		"quota_limit":    limit,
 		"quota_used_pct": float64(totalTokens) / float64(limit) * 100,
 	})
 }
@@ -244,8 +352,8 @@ func (s *Server) HandleExecuteAgent(w http.ResponseWriter, r *http.Request) {
 		result.TokenUsage.InputTokens, result.TokenUsage.OutputTokens, cost)
 
 	jsonResponse(w, 200, map[string]interface{}{
-		"result":    result.Data,
-		"tokens":    result.TokenUsage,
-		"cost":      cost,
+		"result": result.Data,
+		"tokens": result.TokenUsage,
+		"cost":   cost,
 	})
 }

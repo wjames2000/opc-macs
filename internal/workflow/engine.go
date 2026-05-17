@@ -3,10 +3,12 @@ package workflow
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/wjames2000/opc-macs/internal/runtime"
+	"gopkg.in/yaml.v3"
 )
 
 type Engine struct {
@@ -16,6 +18,19 @@ type Engine struct {
 
 func NewEngine(loader *runtime.Loader, client runtime.ModelClient) *Engine {
 	return &Engine{loader: loader, client: client}
+}
+
+// StartFromFile reads a YAML workflow file and executes it.
+func (e *Engine) StartFromFile(ctx context.Context, path, input string) (*Session, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read workflow file: %w", err)
+	}
+	var wf Workflow
+	if err := yaml.Unmarshal(data, &wf); err != nil {
+		return nil, fmt.Errorf("parse workflow file: %w", err)
+	}
+	return e.Run(ctx, &wf, input)
 }
 
 func (e *Engine) Run(ctx context.Context, wf *Workflow, input string) (*Session, error) {

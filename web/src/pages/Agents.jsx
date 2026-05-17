@@ -1,14 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { api } from '../lib/api';
 
-const agents = [
-  { name: 'copywriter', summary: '营销文案生成', model: 'deepseek-v4-flash', hitl: true, calls: 12, tokens: '3,450', color: 'border-l-blue-500' },
-  { name: 'email_sorter', summary: '邮件分类与回复', model: 'gemini-2.0-flash', hitl: true, calls: 8, tokens: '1,200', color: 'border-l-yellow-500' },
-  { name: 'xhs_poster', summary: '小红书种草笔记', model: 'deepseek-v4-flash', hitl: true, calls: 5, tokens: '2,100', color: 'border-l-green-500' },
-  { name: 'competitive_analysis', summary: '竞品 SWOT 分析', model: 'deepseek-v4-flash', hitl: false, calls: 3, tokens: '4,500', color: 'border-l-purple-500' },
-  { name: 'meeting_minutes', summary: '会议纪要整理', model: 'deepseek-v4-flash', hitl: false, calls: 1, tokens: '2,800', color: 'border-l-red-500' },
-];
+const COLORS = ['border-l-blue-500', 'border-l-yellow-500', 'border-l-green-500', 'border-l-purple-500', 'border-l-red-500', 'border-l-cyan-500', 'border-l-pink-500', 'border-l-indigo-500', 'border-l-teal-500', 'border-l-orange-500'];
 
 export default function Agents() {
+  const [agents, setAgents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.listAgents().then(data => {
+      if (Array.isArray(data)) setAgents(data);
+    }).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="p-8 text-gray-500">加载中...</div>;
+
   return (
     <div>
       <div className="flex justify-between items-center mb-5">
@@ -17,7 +23,7 @@ export default function Agents() {
       </div>
       <div className="grid md:grid-cols-2 gap-4">
         {agents.map((agent, i) => (
-          <div key={i} className={`bg-white rounded-xl border border-l-4 ${agent.color} p-5`}>
+          <div key={agent.name || i} className={`bg-white rounded-xl border border-l-4 ${COLORS[i % COLORS.length]} p-5`}>
             <div className="flex items-center gap-3 mb-3">
               <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
               <div>
@@ -27,11 +33,9 @@ export default function Agents() {
               <span className="ml-auto text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded">● 在线</span>
             </div>
             <div className="flex gap-4 text-xs text-gray-500 mb-3">
-              <span>🤖 {agent.model}</span>
-              <span>{agent.hitl ? '⚡ 需 HITL' : '✅ 自动'}</span>
-              <span>📊 今日 {agent.calls} 次</span>
+              <span>🤖 {agent.model_name || 'default'}</span>
+              <span>{agent.requires_hitl ? '⚡ 需 HITL' : '✅ 自动'}</span>
             </div>
-            <p className="text-xs text-gray-400 mb-3">Token: {agent.tokens}</p>
             <div className="flex gap-2">
               <button className="text-xs border px-3 py-1.5 rounded hover:bg-gray-50">⚙️ 配置</button>
               <button className="text-xs border px-3 py-1.5 rounded hover:bg-gray-50">📊 详情</button>

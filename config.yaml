@@ -34,3 +34,8 @@ harness:
   max_steps_per_agent: 10
   hitl_operations: ["send_email", "publish_post"]
   forbidden_words: ["guaranteed", "100% safe", "confidential_data"]
+
+mcp:
+  enabled: true
+  port: 8090
+  transport: "sse"

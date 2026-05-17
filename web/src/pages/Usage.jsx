@@ -1,23 +1,32 @@
-import React from 'react';
-
-const rows = [
-  { agent: 'copywriter', model: 'deepseek-v4-flash', calls: 156, inTokens: '45,200', outTokens: '28,300', cost: '$1.42', pct: 80 },
-  { agent: 'xhs_poster', model: 'deepseek-v4-flash', calls: 67, inTokens: '32,100', outTokens: '19,800', cost: '$0.99', pct: 55 },
-  { agent: 'email_sorter', model: 'gemini-2.0-flash', calls: 89, inTokens: '12,400', outTokens: '8,100', cost: '$0.41', pct: 28 },
-  { agent: 'competitive_analysis', model: 'deepseek-v4-flash', calls: 23, inTokens: '18,500', outTokens: '12,400', cost: '$0.62', pct: 35 },
-  { agent: 'meeting_minutes', model: 'deepseek-v4-flash', calls: 12, inTokens: '6,800', outTokens: '4,200', cost: '$0.21', pct: 15 },
-];
+import React, { useState, useEffect } from 'react';
+import { api } from '../lib/api';
 
 export default function Usage() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const tenantId = localStorage.getItem('tenant_id') || 'demo';
+    api.usageSummary(tenantId).then(data => {
+      setStats(data);
+    }).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="p-8 text-gray-500">加载中...</div>;
+
+  const statCards = [
+    { label: '总 Token', value: stats?.total_tokens?.toLocaleString() || '--', sub: '累计用量' },
+    { label: '总费用', value: stats?.total_cost ? `¥${stats.total_cost}` : '--', sub: '本月' },
+    { label: 'Agent 数量', value: stats?.agent_count?.toString() || '--', sub: '已安装' },
+    { label: '调用次数', value: stats?.total_calls?.toLocaleString() || '--', sub: '累计' },
+  ];
+
+  const rows = stats?.agent_stats || [];
+
   return (
     <div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {[
-          { label: '总 Token', value: '124,500', sub: '↑ 12% 较上月' },
-          { label: '总费用', value: '$3.12', sub: '预算内 ✅' },
-          { label: '平均/任务', value: '2,650', sub: '↓ 5%' },
-          { label: '缓存命中', value: '87%', sub: '↑ 缓存优化' },
-        ].map((s, i) => (
+        {statCards.map((s, i) => (
           <div key={i} className="bg-white rounded-xl border p-4">
             <div className="text-xl font-bold font-mono">{s.value}</div>
             <div className="text-sm text-gray-500">{s.label}</div>
@@ -49,14 +58,21 @@ export default function Usage() {
             </thead>
             <tbody>
               {rows.map((r, i) => (
-                <tr key={i} className="border-b last:border-0 hover:bg-gray-50">
+                <tr key={r.agent || i} className="border-b last:border-0 hover:bg-gray-50">
                   <td className="p-3 font-medium">{r.agent}</td>
-                  <td className="p-3"><span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">{r.model}</span></td>
-                  <td className="p-3">{r.calls}</td>
-                  <td className="p-3 font-mono text-xs">{r.inTokens}</td>
-                  <td className="p-3 font-mono text-xs">{r.outTokens}</td>
-                  <td className="p-3 font-mono text-xs">{r.cost}</td>
-                  <td className="p-3"><div className="w-20 h-1.5 bg-gray-100 rounded"><div className="h-full rounded bg-cyan-500" style={{width: `${r.pct}%`}} /></div></td>
+                  <td className="p-3 text-gray-500">{r.model || '--'}</td>
+                  <td className="p-3 font-mono">{r.calls?.toLocaleString() || '--'}</td>
+                  <td className="p-3 font-mono">{r.input_tokens?.toLocaleString() || '--'}</td>
+                  <td className="p-3 font-mono">{r.output_tokens?.toLocaleString() || '--'}</td>
+                  <td className="p-3">{r.cost || '--'}</td>
+                  <td className="p-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1.5 bg-gray-100 rounded-full">
+                        <div className="h-full rounded-full bg-blue-800" style={{ width: `${r.percentage || 0}%` }} />
+                      </div>
+                      <span className="text-xs text-gray-500 w-8 text-right">{r.percentage || 0}%</span>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

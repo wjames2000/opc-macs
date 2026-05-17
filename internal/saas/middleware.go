@@ -56,6 +56,76 @@ func TenantMiddleware(store *TenantStore) func(http.Handler) http.Handler {
 	}
 }
 
+func AuthMiddleware(store *UserStore) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			auth := r.Header.Get("Authorization")
+			if !strings.HasPrefix(auth, "Bearer ") || len(auth) < 30 {
+				// Try X-User-ID header fallback
+				userID := r.Header.Get("X-User-ID")
+				role := r.Header.Get("X-User-Role")
+				if userID != "" {
+					ctx := context.WithValue(r.Context(), CtxUserID, userID)
+					if role != "" {
+						ctx = context.WithValue(ctx, CtxUserRole, role)
+					}
+					r = r.WithContext(ctx)
+				}
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			token := strings.TrimPrefix(auth, "Bearer ")
+			if strings.HasPrefix(token, "tk_") {
+				if user, err := store.GetByID(r.Context(), token); err == nil {
+					ctx := context.WithValue(r.Context(), CtxUserID, user.ID)
+					if user.Role != "" {
+						ctx = context.WithValue(ctx, CtxUserRole, user.Role)
+					}
+					r = r.WithContext(ctx)
+				}
+			} else {
+				// Direct user ID as token
+				if user, err := store.GetByID(r.Context(), token); err == nil {
+					ctx := context.WithValue(r.Context(), CtxUserID, user.ID)
+					if user.Role != "" {
+						ctx = context.WithValue(ctx, CtxUserRole, user.Role)
+					}
+					r = r.WithContext(ctx)
+				}
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func RequireRole(roles ...string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			role, _ := r.Context().Value(CtxUserRole).(string)
+			if role == "" {
+				jsonError(w, 403, "forbidden: no role assigned")
+				return
+			}
+			for _, allowed := range roles {
+				if role == allowed {
+					next.ServeHTTP(w, r)
+					return
+				}
+			}
+			jsonError(w, 403, "forbidden: insufficient role")
+		})
+	}
+}
+
+func getUserRole(r *http.Request) string {
+	if role, ok := r.Context().Value(CtxUserRole).(string); ok {
+		return role
+	}
+	return ""
+}
+
 func jsonResponse(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)

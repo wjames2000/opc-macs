@@ -17,6 +17,7 @@ import (
 	"github.com/wjames2000/opc-macs/internal/agent"
 	"github.com/wjames2000/opc-macs/internal/config"
 	"github.com/wjames2000/opc-macs/internal/hitl"
+	"github.com/wjames2000/opc-macs/internal/mcp"
 	"github.com/wjames2000/opc-macs/internal/memory"
 	"github.com/wjames2000/opc-macs/internal/plugins"
 	"github.com/wjames2000/opc-macs/internal/runtime"
@@ -123,6 +124,26 @@ func main() {
 
 	// 初始化 Router
 	router := agent.NewRouter(pluginLoader, cfg.Model.Name, modelClient)
+
+	mcpServer := mcp.NewServer(mcp.Config{
+		Enabled:   cfg.MCP.Enabled,
+		Port:      cfg.MCP.Port,
+		Transport: cfg.MCP.Transport,
+	})
+
+	platformTools := mcp.NewPlatformToolSet(nil, nil)
+	platformTools.RegisterAll(mcpServer)
+
+	agentTools := mcp.NewAgentToolSet(router, pluginLoader, modelClient, cfg.Model.Name)
+	agentTools.RegisterAll(mcpServer)
+	agentTools.RegisterRouterTool(mcpServer)
+
+	if cfg.MCP.Enabled {
+		fmt.Printf("[系统] MCP Server 启动在端口 %d （传输：%s）\n", cfg.MCP.Port, cfg.MCP.Transport)
+	}
+	if err := mcpServer.Start(); err != nil {
+		log.Printf("[警告] MCP Server 启动失败：%v", err)
+	}
 
 	// 初始化 Reviewers
 	reviewer := agent.NewReviewer(cfg.Model.Name, modelClient)
@@ -394,10 +415,10 @@ func processTask(ctx context.Context, input string, loader *runtime.Loader,
 
 	// 3. 调用插件 Execute（或使用缓存）
 	opts := map[string]interface{}{
-		"memories":      memories,
-		"model_client":  modelClient,
-		"model_name":    cfg.Model.Name,
-		"history":       session.FormatHistory(5),
+		"memories":     memories,
+		"model_client": modelClient,
+		"model_name":   cfg.Model.Name,
+		"history":      session.FormatHistory(5),
 	}
 	execResult, err := routeResult.Plugin.Execute(taskCtx, taskInput, opts)
 	if err != nil {

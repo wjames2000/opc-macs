@@ -7,14 +7,28 @@ import Usage from './pages/Usage';
 import Billing from './pages/Billing';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
+import Marketplace from './pages/Marketplace';
+import Wallet from './pages/Wallet';
+import AdminDashboard from './pages/AdminDashboard';
+import Publish from './pages/Publish';
+import VideoScript from './pages/VideoScript';
+import TagGenerator from './pages/TagGenerator';
+import TrendRadar from './pages/TrendRadar';
 
 const navItems = [
   { path: '/', label: '总览', icon: '📊' },
   { path: '/chat', label: '对话', icon: '💬' },
   { path: '/agents', label: 'Agent', icon: '🤖' },
+  { path: '/video-script', label: '视频脚本', icon: '🎬' },
+  { path: '/tags', label: '标签推荐', icon: '🏷️' },
+  { path: '/trends', label: '热点雷达', icon: '📡' },
+  { path: '/publish', label: '发布', icon: '📤' },
+  { path: '/marketplace', label: '市场', icon: '🏪' },
   { path: '/usage', label: '用量', icon: '📈' },
   { path: '/billing', label: '套餐', icon: '💎' },
-  { path: '/settings', label: '设置', icon: '⚙️' },
+  { path: '/wallet', label: '钱包', icon: '💰' },
+  { path: '/admin', label: '管理', icon: '⚙️' },
+  { path: '/settings', label: '设置', icon: '🔧' },
 ];
 
 function Layout({ children }) {
@@ -81,8 +95,15 @@ export default function App() {
         <Route path="/chat" element={<Chat />} />
         <Route path="/agents" element={<Agents />} />
         <Route path="/usage" element={<Usage />} />
-        <Route path="/billing" element={<Billing />} />
-        <Route path="/settings" element={<Settings />} />
+          <Route path="/billing" element={<Billing />} />
+          <Route path="/video-script" element={<VideoScript />} />
+          <Route path="/tags" element={<TagGenerator />} />
+          <Route path="/trends" element={<TrendRadar />} />
+          <Route path="/publish" element={<Publish />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/wallet" element={<Wallet />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/settings" element={<Settings />} />
       </Routes>
     </Layout>
   );
