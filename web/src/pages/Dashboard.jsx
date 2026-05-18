@@ -6,14 +6,16 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    api.usageSummary(localStorage.getItem('tenant_id') || 'demo').then(setStats).catch(() => {});
+    api.usageSummary(localStorage.getItem('tenant_id') || 'demo')
+      .then(setStats)
+      .catch(() => {});
   }, []);
 
   const cards = [
-    { icon: '🤖', label: '活跃 Agent', value: '5', sub: '+2 本周新增', color: 'blue' },
-    { icon: '💰', label: '今日 Token', value: '12,450', sub: '↓ 8% 较昨日', color: 'yellow' },
-    { icon: '📊', label: '本月费用', value: '$0.32', sub: '预算内 ✅', color: 'green' },
-    { icon: '📋', label: '任务总数', value: '47', sub: '今日 12', color: 'purple' },
+    { icon: '🤖', label: '活跃 Agent', value: stats?.active_agents?.toString() ?? '5', sub: stats ? `上次活跃: ${stats.last_active ?? '今天'}` : '加载中...', color: 'blue' },
+    { icon: '💰', label: '今日 Token', value: stats ? (stats.daily_tokens ?? stats.total_tokens ?? 0).toLocaleString() : '12,450', sub: stats ? `总计: ${(stats.total_tokens ?? 0).toLocaleString()}` : '加载中...', color: 'yellow' },
+    { icon: '📊', label: '本月费用', value: stats?.monthly_cost ? `$${stats.monthly_cost.toFixed(2)}` : '$0.00', sub: stats?.budget ? `预算 ¥${stats.budget}` : '预算内', color: 'green' },
+    { icon: '📋', label: '任务总数', value: stats?.total_tasks?.toString() ?? '0', sub: stats ? `今日 ${stats.today_tasks ?? 0}` : '加载中...', color: 'purple' },
   ];
 
   return (
@@ -31,12 +33,11 @@ export default function Dashboard() {
       <div className="bg-white rounded-xl border p-5">
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-semibold">最近活动</h3>
-          <a href="#" className="text-sm text-cyan-600">查看全部 →</a>
+          <span className="text-sm text-gray-400">{stats?.last_updated ? `更新于 ${stats.last_updated}` : ''}</span>
         </div>
         {[
-          { icon: '💬', agent: 'copywriter', text: '文案生成 · 杭州可人酒店', meta: '1,250 tokens', time: '5 分钟前', color: 'bg-blue-50' },
-          { icon: '📧', agent: 'email_sorter', text: '邮件分类 · 客户投诉', meta: '340 tokens', time: '12 分钟前', color: 'bg-green-50' },
-          { icon: '📊', agent: 'competitive', text: '竞品分析 · 竞品报告', meta: '4,500 tokens', time: '32 分钟前', color: 'bg-purple-50' },
+          { icon: '💬', agent: 'copywriter', text: '文案生成', meta: stats ? `${stats.total_tokens ?? 0} tokens` : '加载中...', time: '最近', color: 'bg-blue-50' },
+          { icon: '📊', agent: 'competitive', text: '趋势分析', meta: stats ? `${stats.active_agents ?? 0} active` : '加载中...', time: '最近', color: 'bg-purple-50' },
         ].map((item, i) => (
           <div key={i} className="flex items-center gap-3 py-3 border-b last:border-0">
             <div className={`w-9 h-9 rounded-lg ${item.color} flex items-center justify-center text-sm`}>{item.icon}</div>

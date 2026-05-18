@@ -336,7 +336,7 @@ func (s *Server) HandleExecuteAgent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Execute with mock model client (dev mode)
+	// Execute plugin directly (non-LLM plugins run inline)
 	result, err := plugin.Execute(r.Context(), req.Input, map[string]interface{}{})
 	if err != nil {
 		jsonError(w, 500, "execution failed: "+err.Error())

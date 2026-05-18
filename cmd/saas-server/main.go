@@ -94,7 +94,10 @@ func main() {
 	mux.HandleFunc("GET /api/v1/wallet/transactions", wal.HandleGetTransactions)
 	mux.HandleFunc("GET /api/v1/wallet/withdrawals", wal.HandleListWithdrawals)
 	mux.HandleFunc("POST /api/v1/wallet/withdrawals", wal.HandleCreateWithdrawal)
-	mux.HandleFunc("POST /api/v1/settlement/calculate", srv.Settlement.HandleSettleOrder)
+	mux.HandleFunc("POST /api/v1/settlement/calculate", srv.Settlement.HandleCalculate)
+	mux.HandleFunc("GET /api/v1/settlement/orders", srv.Settlement.HandleList)
+	mux.HandleFunc("GET /api/v1/settlement/orders/{id}", srv.Settlement.HandleGet)
+	mux.HandleFunc("GET /api/v1/settlement/invoices/{id}", srv.Settlement.HandleInvoiceDownload)
 
 	cre := srv.Credit
 	mux.HandleFunc("POST /api/v1/credit/reviews", cre.HandleAddReview)

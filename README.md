@@ -20,10 +20,23 @@
 ✅ pgvector 向量存储           ✅ Wails 桌面端 (macOS)
 ✅ Chrome 扩展 (MV3)          ✅ 健康检查 API
 ✅ 插件脚手架                  ✅ MCP Protocol 支持
-✅ 多平台内容发布              ✅ 自动互动运营
-✅ 视频脚本生成                ✅ 热点雷达
-✅ AI 标签推荐                 ✅ 内容交易市场
+✅ 多平台内容发布 (12 平台)    ✅ 自动互动运营 (评论/监测/雷达)
+✅ 视频脚本生成 (7 风格)       ✅ 热点雷达 (6 平台采集)
+✅ AI 标签推荐 (热度/策略)     ✅ 内容交易市场 (接单/结算/钱包)
+✅ 图片/视频 AI 生成           ✅ MCP 协议支持
 ```
+
+---
+
+## 项目阶段
+
+OPC-Agent 内容营销升级已完成 **238/240 项任务 (~99%)**：
+
+| Phase | 内容 | 状态 | 产出物 |
+|-------|------|------|--------|
+| B — 内容平台核心层 | 12 平台 SDK + 发布引擎 + 互动引擎 + MCP | 🟢 **100%** | `internal/platform/` `internal/publish/` `internal/engage/` |
+| A — 内容创作增强层 | 视频脚本 + 标签推荐 + 热点雷达 Agent | 🟢 **100%** | `internal/plugins/video_script.go` `tag_generator.go` `trend_radar.go` |
+| C — 商业化变现层 | 任务市场 + 结算引擎 + 钱包 + 反作弊 | 🟢 **~98%** | `internal/saas/handler_marketplace*.go` `handler_settlement.go` `handler_wallet.go` |
 
 ---
 
@@ -57,17 +70,19 @@ docker compose up -d
 | competitive_analysis | `#竞品` `@competitive` | deepseek-v4-flash | ✅ | SWOT 竞品分析 |
 | meeting_minutes | `#会议` `@meeting` | deepseek-v4-flash | ✅ | 会议纪要整理 |
 
-### 内容营销插件（规划中）
+### 内容营销插件（已完成 ✅）
 
-| 插件 | 技能 | 说明 |
-|------|------|------|
-| publisher | `@publish` | 多平台一键发布（抖音/小红书/B站/YouTube 等 13+ 平台） |
-| engage | `@engage` | 跨平台自动互动运营（评论回复 / 品牌监测 / 热点雷达） |
-| content_creator | `@create` | AI 图片/视频生成（Midjourney / Seedance / Kling） |
-| video_script | `@script` | AI 视频脚本生成（含分镜 + 话术 + 画面建议） |
-| trend_radar | `@trend` | 热点趋势监测 + 选题推荐 |
-| tag_generator | `@tags` | AI 标签推荐（各平台标签策略优化） |
-| monetize | `@monetize` | 内容交易市场（接单 / 结算 / 提现） |
+| 插件 | 技能 | 模型 | 说明 |
+|------|------|------|------|
+| publisher | `@publish` | — | 多平台一键发布（抖音/小红书/B站/YouTube 等 12 平台） |
+| engage | `@engage` | — | 跨平台自动互动运营（评论回复 / 品牌监测） |
+| content_creator | `@create` | — | AI 图片/视频生成（Midjourney / Seedance / Kling） |
+| video_script | `@script` | deepseek-v4-flash | AI 视频脚本生成（7 平台 × 7 风格） |
+| trend_radar | `@trend` | deepseek-v4-flash | 热点趋势监测 + 选题推荐（6 平台采集） |
+| tag_generator | `@tags` | deepseek-v4-flash | AI 标签推荐（热度模型 + 平台差异化策略） |
+| monetize | `@monetize` | — | 内容交易市场（接单/结算/钱包/提现/反作弊） |
+
+> 内容营销升级任务完成 238/240（~99%）。详情见 [阶段状态报告](docs/17-阶段状态报告-内容营销升级.md)。
 
 ---
 
@@ -157,10 +172,10 @@ cd desktop && wails dev
 │   ├── harness/                 # Harness 控制 (Role/State/Contract/Guardrail)
 │   ├── hitl/                    # HITL 终端确认 (高风险操作拦截)
 │   ├── memory/                  # 向量记忆引擎 + pgvector
-│   ├── mcp/                     # MCP Server (SSE 传输, Tool/Resource 暴露) [规划中]
-│   ├── platform/                # 多平台 SDK (抖音/小红书/YouTube 等) [规划中]
-│   ├── publish/                 # 发布引擎 (队列/重试/定时) [规划中]
-│   ├── engage/                  # 互动引擎 (自动回复/品牌监测/热点) [规划中]
+│   ├── mcp/                     # MCP Server (SSE 传输, Tool/Resource 暴露)
+│   ├── platform/                # 多平台 SDK (抖音/小红书/YouTube 等 12 平台)
+│   ├── publish/                 # 发布引擎 (队列/重试/定时)
+│   ├── engage/                  # 互动引擎 (自动回复/品牌监测/热点)
 │   ├── plugins/                 # 内置 Agent 插件注册 (内嵌模式)
 │   ├── runtime/                 # Plugin 运行时 + Loader
 │   ├── saas/                    # 多租户 SaaS 数据模型与 API
@@ -200,7 +215,7 @@ cd desktop && wails dev
 ├── data/                        # 记忆持久化存储 (memory.json)
 ├── scripts/
 │   └── create-plugin.sh         # 插件脚手架 (make new-plugin)
-├── docs/                        # 设计文档 (15 份)
+├── docs/                        # 设计文档 (18 份)
 │   ├── 01 项目需求说明书.md
 │   ├── ...
 │   ├── 12 内容营销升级需求说明书.md

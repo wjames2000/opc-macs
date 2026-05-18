@@ -56,6 +56,10 @@ export const api = {
   createWithdrawal: (data) => request('/wallet/withdrawals', { method: 'POST', body: JSON.stringify(data) }),
   listWithdrawals: () => request('/wallet/withdrawals'),
 
+  // Engage
+  engageReply: (data) => request('/engage/reply', { method: 'POST', body: JSON.stringify(data) }),
+  engageAnalyze: (data) => request('/engage/analyze', { method: 'POST', body: JSON.stringify(data) }),
+
   // Settlement
   calculateSettlement: (data) => request('/settlement/calculate', { method: 'POST', body: JSON.stringify(data) }),
 
